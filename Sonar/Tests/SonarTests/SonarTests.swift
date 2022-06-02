@@ -97,19 +97,19 @@ class SonarTests: XCTestCase {
         init(identifier: String, states: Set<KripkeState>) {
             self.identifier = identifier
             for state in states {
-                let (id, _) = try! self.add(state.properties, isInitial: state.isInitial)
+                let id = try! self.add(state.properties, isInitial: state.isInitial)
                 for edge in state.edges {
                     try! self.add(edge: edge, to: id)
                 }
             }
         }
 
-        func add(_ propertyList: KripkeStatePropertyList, isInitial: Bool) throws -> (Int64, KripkeState) {
+        func add(_ propertyList: KripkeStatePropertyList, isInitial: Bool) throws -> Int64 {
             let id = try id(for: propertyList)
             if nil == allStates[id] {
                 allStates[id] = (propertyList, isInitial, [])
             }
-            return try (id, state(for: id))
+            return id
         }
 
         func add(edge: KripkeEdge, to id: Int64) throws {
@@ -291,6 +291,7 @@ class SonarTests: XCTestCase {
                                 timeslot: Timeslot(
                                     fsms: [data.0],
                                     callChain: CallChain(root: data.0, calls: []),
+                                    externalDependencies: [],
                                     startingTime: 0,
                                     duration: timeslotLength,
                                     cyclesExecuted: 0
@@ -303,6 +304,7 @@ class SonarTests: XCTestCase {
                                 timeslot: Timeslot(
                                     fsms: [data.0],
                                     callChain: CallChain(root: data.0, calls: []),
+                                    externalDependencies: [],
                                     startingTime: 0,
                                     duration: timeslotLength,
                                     cyclesExecuted: 0
@@ -318,6 +320,7 @@ class SonarTests: XCTestCase {
        let verifier = ScheduleVerifier(
             isolatedThreads: ScheduleIsolator(
                 threads: threads,
+                parameterisedThreads: [:],
                 cycleLength: timeslotLength
             )
         )
@@ -380,6 +383,7 @@ class SonarTests: XCTestCase {
                                 timeslot: Timeslot(
                                     fsms: [data.0],
                                     callChain: CallChain(root: data.0, calls: []),
+                                    externalDependencies: [],
                                     startingTime: UInt(index) * timeslotLength,
                                     duration: timeslotLength,
                                     cyclesExecuted: 0
@@ -392,6 +396,7 @@ class SonarTests: XCTestCase {
                                 timeslot: Timeslot(
                                     fsms: [data.0],
                                     callChain: CallChain(root: data.0, calls: []),
+                                    externalDependencies: [],
                                     startingTime: UInt(index) * timeslotLength,
                                     duration: timeslotLength,
                                     cyclesExecuted: 0
@@ -407,6 +412,7 @@ class SonarTests: XCTestCase {
        let verifier = ScheduleVerifier(
             isolatedThreads: ScheduleIsolator(
                 threads: threads,
+                parameterisedThreads: [:],
                 cycleLength: UInt(wbVars.count) * timeslotLength
             )
         )
@@ -468,6 +474,7 @@ class SonarTests: XCTestCase {
                         timeslot: Timeslot(
                             fsms: [data.0],
                             callChain: CallChain(root: data.0, calls: []),
+                            externalDependencies: [],
                             startingTime: UInt(index) * timeslotLength,
                             duration: timeslotLength,
                             cyclesExecuted: 0
@@ -480,6 +487,7 @@ class SonarTests: XCTestCase {
                         timeslot: Timeslot(
                             fsms: [data.0],
                             callChain: CallChain(root: data.0, calls: []),
+                            externalDependencies: [],
                             startingTime: UInt(index) * timeslotLength,
                             duration: timeslotLength,
                             cyclesExecuted: 0
@@ -494,6 +502,7 @@ class SonarTests: XCTestCase {
         let verifier = ScheduleVerifier(
             isolatedThreads: ScheduleIsolator(
                 threads: threads,
+                parameterisedThreads: [:],
                 cycleLength: UInt(wbVars.count) * timeslotLength
             )
         )
