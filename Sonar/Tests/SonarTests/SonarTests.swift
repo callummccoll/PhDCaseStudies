@@ -311,10 +311,9 @@ class SonarTests: XCTestCase {
                                 )
                             )
                         )
-                    ],
-                    stepLookup: []
+                    ]
                 ),
-                pool: FSMPool(fsms: [machines[index]])
+                pool: FSMPool(fsms: [machines[index]], parameterisedFSMs: [])
             )
         }
        let verifier = ScheduleVerifier(
@@ -403,10 +402,9 @@ class SonarTests: XCTestCase {
                                 )
                             )
                         )
-                    ],
-                    stepLookup: []
+                    ]
                 ),
-                pool: FSMPool(fsms: [machines[index]])
+                pool: FSMPool(fsms: [machines[index]], parameterisedFSMs: [])
             )
         }
        let verifier = ScheduleVerifier(
@@ -465,7 +463,7 @@ class SonarTests: XCTestCase {
                 echoPinValue: $3
             ).0
         }
-        let pool = FSMPool(fsms: machines)
+        let pool = FSMPool(fsms: machines, parameterisedFSMs: [])
         let steps = wbVars.enumerated().flatMap { (index, data) in
             [
                 VerificationMap.Step(
@@ -497,7 +495,7 @@ class SonarTests: XCTestCase {
             ]
         }
         let threads = [
-            IsolatedThread(map: VerificationMap(steps: steps, stepLookup: []), pool: pool)
+            IsolatedThread(map: VerificationMap(steps: steps), pool: pool)
         ]
         let verifier = ScheduleVerifier(
             isolatedThreads: ScheduleIsolator(
