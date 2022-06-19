@@ -311,7 +311,8 @@ class SonarTests: XCTestCase {
                                 )
                             )
                         )
-                    ]
+                    ],
+                    delegates: []
                 ),
                 pool: FSMPool(fsms: [machines[index]], parameterisedFSMs: [])
             )
@@ -402,7 +403,8 @@ class SonarTests: XCTestCase {
                                 )
                             )
                         )
-                    ]
+                    ],
+                    delegates: []
                 ),
                 pool: FSMPool(fsms: [machines[index]], parameterisedFSMs: [])
             )
@@ -495,7 +497,7 @@ class SonarTests: XCTestCase {
             ]
         }
         let threads = [
-            IsolatedThread(map: VerificationMap(steps: steps), pool: pool)
+            IsolatedThread(map: VerificationMap(steps: steps, delegates: []), pool: pool)
         ]
         let verifier = ScheduleVerifier(
             isolatedThreads: ScheduleIsolator(
