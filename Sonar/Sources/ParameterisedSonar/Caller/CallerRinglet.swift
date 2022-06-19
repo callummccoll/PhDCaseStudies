@@ -8,9 +8,9 @@ import swiftfsm
  *  state is returned.  If no transitions are possible then the main method is
  *  called and the state is returned.
  */
-public final class SonarRinglet: Ringlet, Cloneable, KripkeVariablesModifier {
+public final class CallerRinglet: Ringlet, Cloneable, KripkeVariablesModifier {
 
-    internal var Me: SonarFiniteStateMachine!
+    internal var Me: CallerFiniteStateMachine!
 
     public var computedVars: [String: Any] {
         return [
@@ -41,7 +41,7 @@ public final class SonarRinglet: Ringlet, Cloneable, KripkeVariablesModifier {
      *
      *  - Returns: A state representing the next state to execute.
      */
-    public func execute(state: SonarState) -> SonarState {
+    public func execute(state: CallerState) -> CallerState {
         // Call onEntry if we have just transitioned to this state.
         if state != self.Me.previousState {
             state.onEntry()
@@ -57,8 +57,8 @@ public final class SonarRinglet: Ringlet, Cloneable, KripkeVariablesModifier {
         return state
     }
 
-    public func clone() -> SonarRinglet {
-        let r = SonarRinglet()
+    public func clone() -> CallerRinglet {
+        let r = CallerRinglet()
         r.Me = self.Me
         return r
     }
