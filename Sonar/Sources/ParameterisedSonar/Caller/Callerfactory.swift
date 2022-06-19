@@ -57,6 +57,7 @@ public func make_submachine_Caller(name machineName: String, gateway: FSMGateway
         submachines: []
     )
     state_Initial.Me = fsm
+    state_Exit.Me = fsm
     return (AnyControllableFiniteStateMachine(fsm), [])
 }
 
