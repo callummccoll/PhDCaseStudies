@@ -1,12 +1,12 @@
 import swiftfsm
 import SwiftfsmWBWrappers
 
-public func make_Caller(name: String = "Caller", gateway: FSMGateway, clock: Timer, caller: FSM_ID) -> (FSMType, [ShallowDependency]) {
-    let (fsm, dependencies) = make_submachine_Caller(name: name, gateway: gateway, clock: clock, caller: caller)
+public func make_Caller(name: String = "Caller", gateway: FSMGateway, clock: Timer) -> (FSMType, [ShallowDependency]) {
+    let (fsm, dependencies) = make_submachine_Caller(name: name, gateway: gateway, clock: clock)
     return (FSMType.controllableFSM(fsm), dependencies)
 }
 
-public func make_submachine_Caller(name machineName: String, gateway: FSMGateway, clock: Timer, caller: FSM_ID) -> (AnyControllableFiniteStateMachine, [ShallowDependency]) {
+public func make_submachine_Caller(name machineName: String, gateway: FSMGateway, clock: Timer) -> (AnyControllableFiniteStateMachine, [ShallowDependency]) {
     let myID = gateway.id(of: machineName)
     let sonarID = gateway.id(of: "Sonar")
     // FSM Variables.
@@ -58,7 +58,7 @@ public func make_submachine_Caller(name machineName: String, gateway: FSMGateway
     )
     state_Initial.Me = fsm
     state_Exit.Me = fsm
-    return (AnyControllableFiniteStateMachine(fsm), [])
+    return (AnyControllableFiniteStateMachine(fsm), [.callableMachine(name: "Sonar")])
 }
 
 

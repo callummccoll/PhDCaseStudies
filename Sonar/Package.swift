@@ -46,5 +46,16 @@ let package = Package(
                 //.product(name: "SwiftfsmWBWrappers", package: "SwiftfsmWBWrappers")
             ]
         ),
+        .testTarget(
+            name: "ParameterisedSonarTests",
+            dependencies: [
+                "ParameterisedSonar",
+                "FSM",
+                "SwiftfsmWBWrappers",
+                .product(name: "swiftfsm_binaries", package: "swiftfsm"),
+                .product(name: "Verification", package: "swiftfsm")
+                //.product(name: "SwiftfsmWBWrappers", package: "SwiftfsmWBWrappers")
+            ]
+        ),
     ]
 )

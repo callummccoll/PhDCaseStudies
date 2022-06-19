@@ -11,7 +11,8 @@ public final class CallerState_Initial: CallerState {
             "clock": [],
             "snapshotSensors": [],
             "snapshotActuators": [],
-            "Me": []
+            "Me": [],
+            "_Sonar": []
         ]
     }
 
@@ -25,6 +26,15 @@ public final class CallerState_Initial: CallerState {
         }
         set {
             Me.fsmVars.vars = newValue
+        }
+    }
+
+    public internal(set) var distance: UInt16? {
+        get {
+            return fsmVars.distance
+        }
+        set {
+            fsmVars.distance = newValue
         }
     }
 
@@ -45,9 +55,14 @@ public final class CallerState_Initial: CallerState {
         super.init(name, transitions: transitions.map { CallerStateTransition($0) }, snapshotSensors: [], snapshotActuators: [])
     }
 
-    public override func onEntry() {}
+    public override func onEntry() {
+        promise = Sonar(echoPin: kwb_Arduino2Pin_v, triggerPin: kwb_Arduino3Pin_v, echoPinValue: kwb_Arduino2PinValue_v)
+    }
 
-    public override func onExit() {}
+    public override func onExit() {
+        distance = promise.result
+        promise = nil
+    }
 
     public override func main() {}
 

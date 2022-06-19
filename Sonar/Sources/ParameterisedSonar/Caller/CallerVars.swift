@@ -3,10 +3,14 @@ import SwiftfsmWBWrappers
 
 public final class CallerVars: Variables {
 
-    public init() {}
+    var distance: UInt16?
+
+    public init(distance: UInt16? = nil) {
+        self.distance = distance
+    }
 
     public final func clone() -> CallerVars {
-        return CallerVars()
+        return CallerVars(distance: self.distance)
     }
 
 }
