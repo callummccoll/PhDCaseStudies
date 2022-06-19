@@ -28,14 +28,20 @@ public final class CallerState_Initial: CallerState {
         }
     }
 
+    public var promise: Promise<UInt16>!
+
+    let _Sonar: (wb_types, wb_types, wb_types) -> Promise<UInt16>
+
     public init(
         _ name: String,
         transitions: [Transition<CallerState_Initial, CallerState>] = [],
         gateway: FSMGateway
-,        clock: Timer
+,        clock: Timer,
+        Sonar: @escaping (wb_types, wb_types, wb_types) -> Promise<UInt16>
     ) {
         self.gateway = gateway
         self.clock = clock
+        self._Sonar = Sonar
         super.init(name, transitions: transitions.map { CallerStateTransition($0) }, snapshotSensors: [], snapshotActuators: [])
     }
 
@@ -45,15 +51,21 @@ public final class CallerState_Initial: CallerState {
 
     public override func main() {}
 
+    func Sonar(echoPin: wb_types, triggerPin: wb_types, echoPinValue: wb_types) -> Promise<UInt16> {
+        self._Sonar(echoPin, triggerPin, echoPinValue)
+    }
+
     public override final func clone() -> CallerState_Initial {
         let transitions: [Transition<CallerState_Initial, CallerState>] = self.transitions.map { $0.cast(to: CallerState_Initial.self) }
         let state = CallerState_Initial(
             "Initial",
             transitions: transitions,
             gateway: self.gateway
-,            clock: self.clock
+,            clock: self.clock,
+            Sonar: _Sonar
         )
         state.Me = self.Me
+        state.promise = self.promise
         return state
     }
 
