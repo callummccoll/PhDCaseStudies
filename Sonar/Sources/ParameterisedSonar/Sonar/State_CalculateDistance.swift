@@ -102,9 +102,7 @@ public final class State_CalculateDistance: SonarState {
         result = UInt16(max(Double(numLoops) * SCHEDULE_LENGTH * SPEED_OF_SOUND / 2.0 - SONAR_OFFSET, 0.0))
     }
 
-    public override func onExit() {
-        numLoops = 0
-    }
+    public override func onExit() {}
 
     public override func main() {
         
