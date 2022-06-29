@@ -54,10 +54,10 @@ public final class AlarmState_Off: AlarmState {
     public override final func clone() -> AlarmState_Off {
         let transitions: [Transition<AlarmState_Off, AlarmState>] = self.transitions.map { $0.cast(to: AlarmState_Off.self) }
         let state = AlarmState_Off(
-            "Initial",
+            self.name,
             transitions: transitions,
-            gateway: self.gateway
-,            clock: self.clock
+            gateway: self.gateway,
+            clock: self.clock
         )
         state.Me = self.Me
         return state

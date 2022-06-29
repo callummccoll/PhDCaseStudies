@@ -54,7 +54,7 @@ public final class CookingState_Not_Cooking: CookingState {
     public override final func clone() -> CookingState_Not_Cooking {
         let transitions: [Transition<CookingState_Not_Cooking, CookingState>] = self.transitions.map { $0.cast(to: CookingState_Not_Cooking.self) }
         let state = CookingState_Not_Cooking(
-            "Initial",
+            self.name,
             transitions: transitions,
             gateway: self.gateway
 ,            clock: self.clock

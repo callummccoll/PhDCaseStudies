@@ -310,7 +310,7 @@ class InitialOneMinuteMicrowaveTests: XCTestCase {
             isolatedThreads: ScheduleIsolator(
                 threads: threads,
                 parameterisedThreads: [:],
-                cycleLength: UInt(machines.count) * timeslotLength
+                cycleLength: UInt(machines.count) * timeslotLength + UInt(machines.count) * gap
             )
         )
         let viewFactory = TestableViewFactory { name in
@@ -331,8 +331,11 @@ class InitialOneMinuteMicrowaveTests: XCTestCase {
         let counts = viewFactory.createdViews.map(\.result.count)
         print(counts)
         for (index, view) in viewFactory.createdViews.enumerated() {
-            let outputView = GraphVizKripkeStructureView(filename: "\(machines[index].name).gv")
-            let nusmvView = NuSMVKripkeStructureView(identifier: "\(machines[index].name)")
+            guard let machine = machines.first(where: { view.identifier.hasPrefix($0.name) }) else {
+                fatalError("Unable to fetch corresponding machine from view \(view.identifier)")
+            }
+            let outputView = GraphVizKripkeStructureView(filename: "\(machine.name).gv")
+            let nusmvView = NuSMVKripkeStructureView(identifier: "\(machine.name)")
             try! outputView.generate(store: view.store, usingClocks: true)
             try! nusmvView.generate(store: view.store, usingClocks: true)
         }
@@ -394,7 +397,7 @@ class InitialOneMinuteMicrowaveTests: XCTestCase {
             isolatedThreads: ScheduleIsolator(
                 threads: threads,
                 parameterisedThreads: [:],
-                cycleLength: UInt(machines.count) * timeslotLength
+                cycleLength: UInt(machines.count) * timeslotLength + UInt(machines.count) * gap
             )
         )
         let viewFactory = GraphVizKripkeStructureViewFactory()

@@ -27,7 +27,7 @@ public struct AlarmStateTransition: TransitionType {
     
     public func cast<S: AlarmState>(to type: S.Type) -> Transition<S, AlarmState> {
         guard let transition = self.base as? Transition<S, AlarmState> else {
-            fatalError("Unable to cast bast to Transition<\(type), SonarState>")
+            fatalError("Unable to cast base \(self.base) to Transition<\(type), AlarmState>")
         }
         return transition
     }

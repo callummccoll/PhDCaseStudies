@@ -91,7 +91,7 @@ public func make_submachine_Alarm(name machineName: String, gateway: FSMGateway,
 
         return !status.timeLeft
     }))
-    state_On.addTransition(AlarmStateTransition(Transition<AlarmState_Armed, AlarmState>(state_Off) { state in
+    state_On.addTransition(AlarmStateTransition(Transition<AlarmState_On, AlarmState>(state_Off) { state in
         let Me = state.Me!
         let clock: Timer = state.clock
 

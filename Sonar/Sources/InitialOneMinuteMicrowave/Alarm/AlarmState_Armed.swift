@@ -55,8 +55,8 @@ public final class AlarmState_Armed: AlarmState {
         let state = AlarmState_Armed(
             self.name,
             transitions: transitions,
-            gateway: self.gateway
-,            clock: self.clock
+            gateway: self.gateway,
+            clock: self.clock
         )
         state.Me = self.Me
         return state

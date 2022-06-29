@@ -39,7 +39,7 @@ public final class State_Add_1_Minute: TimerState {
 
     public init(
         _ name: String,
-        transitions: [Transition<State_Initial, TimerState>] = [],
+        transitions: [Transition<State_Add_1_Minute, TimerState>] = [],
         gateway: FSMGateway,
         clock: Timer
     ) {
@@ -61,12 +61,12 @@ public final class State_Add_1_Minute: TimerState {
     }
 
     public override final func clone() -> State_Add_1_Minute {
-        let transitions: [Transition<State_Initial, TimerState>] = self.transitions.map { $0.cast(to: State_Initial.self) }
+        let transitions: [Transition<State_Add_1_Minute, TimerState>] = self.transitions.map { $0.cast(to: State_Add_1_Minute.self) }
         let state = State_Add_1_Minute(
-            "Initial",
+            self.name,
             transitions: transitions,
-            gateway: self.gateway
-,            clock: self.clock
+            gateway: self.gateway,
+            clock: self.clock
         )
         state.Me = self.Me
         return state

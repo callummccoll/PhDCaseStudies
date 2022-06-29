@@ -63,7 +63,7 @@ public final class State_Initial: TimerState {
     public override final func clone() -> State_Initial {
         let transitions: [Transition<State_Initial, TimerState>] = self.transitions.map { $0.cast(to: State_Initial.self) }
         let state = State_Initial(
-            "Initial",
+            self.name,
             transitions: transitions,
             gateway: self.gateway
 ,            clock: self.clock

@@ -13,7 +13,7 @@ public func make_submachine_Timer(name machineName: String, gateway: FSMGateway,
     let fsmVars = SimpleVariablesContainer(vars: TimerVars())
     // States.
     var state_Initial = State_Initial(
-        "Initial",
+        "Check",
         gateway: gateway,
         clock: clock
     )

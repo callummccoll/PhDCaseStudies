@@ -54,7 +54,7 @@ public final class LightState_Off: LightState {
     public override final func clone() -> LightState_Off {
         let transitions: [Transition<LightState_Off, LightState>] = self.transitions.map { $0.cast(to: LightState_Off.self) }
         let state = LightState_Off(
-            "Initial",
+            self.name,
             transitions: transitions,
             gateway: self.gateway
 ,            clock: self.clock

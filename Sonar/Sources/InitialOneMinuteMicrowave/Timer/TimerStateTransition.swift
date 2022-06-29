@@ -27,7 +27,7 @@ public struct TimerStateTransition: TransitionType {
     
     public func cast<S: TimerState>(to type: S.Type) -> Transition<S, TimerState> {
         guard let transition = self.base as? Transition<S, TimerState> else {
-            fatalError("Unable to cast bast to Transition<\(type), SonarState>")
+            fatalError("Unable to cast base \(self.base) to Transition<\(type), TimerState>")
         }
         return transition
     }

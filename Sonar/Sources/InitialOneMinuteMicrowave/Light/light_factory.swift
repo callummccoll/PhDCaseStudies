@@ -14,12 +14,12 @@ public func make_submachine_Light(name machineName: String, gateway: FSMGateway,
     let fsmVars = SimpleVariablesContainer(vars: LightVars())
     // States.
     var state_Off = LightState_Off(
-        "Not_Light",
+        "Off",
         gateway: gateway,
         clock: clock
     )
     var state_On = LightState_On(
-        "Light",
+        "On",
         gateway: gateway,
         clock: clock
     )
