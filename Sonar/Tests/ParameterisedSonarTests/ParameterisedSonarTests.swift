@@ -116,6 +116,10 @@ class ParameterisedSonarTests: XCTestCase {
             allStates[id]?.2.insert(edge)
         }
 
+        func markAsInitial(id: Int64) throws {
+            allStates[id]?.1 = true
+        }
+
         func exists(_ propertyList: KripkeStatePropertyList) throws -> Bool {
             return nil != ids[propertyList]
         }

@@ -116,6 +116,10 @@ class InitialOneMinuteMicrowaveTests: XCTestCase {
             allStates[id]?.2.insert(edge)
         }
 
+        func markAsInitial(id: Int64) throws {
+            allStates[id]?.1 = true
+        }
+
         func exists(_ propertyList: KripkeStatePropertyList) throws -> Bool {
             return nil != ids[propertyList]
         }
@@ -269,6 +273,7 @@ class InitialOneMinuteMicrowaveTests: XCTestCase {
         let alarm = make_Alarm(gateway: gateway, clock: clock, status: WhiteboardVariable(msgType: kwb_MicrowaveStatus_v), sound: WhiteboardVariable(msgType: kwb_sound_v)).0
         let cooking = make_Cooking(gateway: gateway, clock: clock, status: WhiteboardVariable(msgType: kwb_MicrowaveStatus_v), motor: WhiteboardVariable(msgType: kwb_motor_v)).0
         let light = make_Light(gateway: gateway, clock: clock, status: WhiteboardVariable(msgType: kwb_MicrowaveStatus_v), light: WhiteboardVariable(msgType: kwb_light_v)).0
+        let combinations = Array(Combinations(fsms: [light.asScheduleableFiniteStateMachine]))
         let machines: [FSMType] = [timer, alarm, cooking, light]
         let threads: [IsolatedThread] = machines.enumerated().map { (index: Int, machine: FSMType) in
             IsolatedThread(
