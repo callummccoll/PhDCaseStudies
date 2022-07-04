@@ -46,6 +46,7 @@ internal final class LightFiniteStateMachine: MachineProtocol {
         get {
             return [AnySnapshotController(external_status), AnySnapshotController(external_light)]
         } set {
+            print("setting external variables: \(newValue.map(\.name))")
             for external in newValue {
                 switch external.name {
                 case self.external_status.name:
@@ -63,6 +64,7 @@ internal final class LightFiniteStateMachine: MachineProtocol {
         get {
             return []
         } set {
+            print("setting sensors: \(newValue.map(\.name))")
         }
     }
 

@@ -36,7 +36,12 @@ public final class LightState_Off: LightState {
     ) {
         self.gateway = gateway
         self.clock = clock
-        super.init(name, transitions: transitions.map { LightStateTransition($0) }, snapshotSensors: ["status", "light"], snapshotActuators: ["status", "light"])
+        super.init(
+            name,
+            transitions: transitions.map { LightStateTransition($0) },
+            snapshotSensors: ["status", "light"],
+            snapshotActuators: ["status", "light"]
+        )
     }
 
     public override func onEntry() {
@@ -56,8 +61,8 @@ public final class LightState_Off: LightState {
         let state = LightState_Off(
             self.name,
             transitions: transitions,
-            gateway: self.gateway
-,            clock: self.clock
+            gateway: self.gateway,
+            clock: self.clock
         )
         state.Me = self.Me
         return state
