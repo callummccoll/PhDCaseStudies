@@ -1,112 +1,76 @@
+/*
+ * CookingFiniteStateMachine.swift
+ * Cooking
+ *
+ * Created by Callum McColl on 6/7/2022.
+ * Copyright © 2022 Callum McColl. All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ *
+ * 2. Redistributions in binary form must reproduce the above
+ *    copyright notice, this list of conditions and the following
+ *    disclaimer in the documentation and/or other materials
+ *    provided with the distribution.
+ *
+ * 3. All advertising materials mentioning features or use of this
+ *    software must display the following acknowledgement:
+ *
+ *        This product includes software developed by Callum McColl.
+ *
+ * 4. Neither the name of the author nor the names of contributors
+ *    may be used to endorse or promote products derived from this
+ *    software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER
+ * OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+ * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+ * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * -----------------------------------------------------------------------
+ * This program is free software; you can redistribute it and/or
+ * modify it under the above terms or under the terms of the GNU
+ * General Public License as published by the Free Software Foundation;
+ * either version 2 of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, see http://www.gnu.org/licenses/
+ * or write to the Free Software Foundation, Inc., 51 Franklin Street,
+ * Fifth Floor, Boston, MA  02110-1301, USA.
+ *
+ */
+
+import FSM
+import KripkeStructure
+import Gateways
+import Timers
+import Verification
 import swiftfsm
 import SwiftfsmWBWrappers
 
-internal final class CookingFiniteStateMachine: MachineProtocol {
+final class CookingFiniteStateMachine: MachineProtocol, CustomStringConvertible {
 
-    public typealias _StateType = CookingState
+    typealias _StateType = MiPalState
+    typealias Ringlet = MiPalRinglet
 
-    fileprivate var allStates: [String: CookingState] {
-        var stateCache: [String: CookingState] = [:]
-        func fetchAllStates(fromState state: CookingState) {
-            if stateCache[state.name] != nil {
-                return
-            }
-            stateCache[state.name] = state
-            state.transitions.forEach {
-                fetchAllStates(fromState: $0.target)
-            }
-        }
-        fetchAllStates(fromState: self.initialState)
-        fetchAllStates(fromState: self.suspendState)
-        fetchAllStates(fromState: self.exitState)
-        return stateCache
-    }
-
-    public var computedVars: [String: Any] {
-        return [
-            "sensors": Dictionary<String, Any>(uniqueKeysWithValues: self.sensors.map {
-                ($0.name, $0.val)
-            }),
-            "actuators": Dictionary<String, Any>(uniqueKeysWithValues: self.actuators.map {
-                ($0.name, $0.val)
-            }),
-            "externalVariables": Dictionary<String, Any>(uniqueKeysWithValues: self.externalVariables.map {
-                ($0.name, $0.val)
-            }),
-            "currentState": self.currentState.name,
-            "fsmVars": self.fsmVars.vars,
-            "states": self.allStates,
-        ]
-    }
-
-    /**
-     * All external variables used by the machine.
-     */
-    public var externalVariables: [AnySnapshotController] {
-        get {
-            return [AnySnapshotController(external_status), AnySnapshotController(external_motor)]
-        } set {
-            for external in newValue {
-                switch external.name {
-                case self.external_status.name:
-                    self.external_status.val = external.val as! WhiteboardVariable<MicrowaveStatus>.Class
-                case self.external_motor.name:
-                    self.external_motor.val = external.val as! WhiteboardVariable<Bool>.Class
-                default:
-                    continue
-                }
-            }
-        }
-    }
-
-    public var sensors: [AnySnapshotController] {
-        get {
-            return []
-        } set {
-        }
-    }
-
-    public var actuators: [AnySnapshotController] {
-        get {
-            return []
-        } set {
-        }
-    }
-
-    public var snapshotSensors: [AnySnapshotController] {
-        guard let snapshotSensors = self.currentState.snapshotSensors else {
-            return []
-        }
-        return snapshotSensors.map { (label: String) -> AnySnapshotController in
-            switch label {
-            case "status":
-                return AnySnapshotController(self.external_status)
-            case "motor":
-                return AnySnapshotController(self.external_motor)
-            default:
-                fatalError("Unable to find sensor \(label).")
-            }
-        }
-    }
-
-    public var snapshotActuators: [AnySnapshotController] {
-        guard let snapshotActuators = self.currentState.snapshotActuators else {
-            return []
-        }
-        return snapshotActuators.map { (label: String) -> AnySnapshotController in
-            switch label {
-            case "status":
-                return AnySnapshotController(self.external_status)
-            case "motor":
-                return AnySnapshotController(self.external_motor)
-            default:
-                fatalError("Unable to find actuator \(label).")
-            }
-        }
-    }
-
-    public var validVars: [String: [Any]] {
-        return [
+    var validVars: [String: [Any]] {
+        [
             "currentState": [],
             "exitState": [],
             "externalVariables": [],
@@ -123,173 +87,116 @@ internal final class CookingFiniteStateMachine: MachineProtocol {
             "submachines": [],
             "suspendedState": [],
             "suspendState": [],
-            "external_status": [],
-            "external_motor": []
+            "status": [],
+            "motor": [],
+            "onState": [],
+            "$__lazy_storage_$_currentState": [],
+            "$__lazy_storage_$_initialState": [],
+            "$__lazy_storage_$_onState": []
         ]
     }
 
-    /**
-     *  The state that is currently executing.
-     */
-    public var currentState: CookingState
-
-    /**
-     *  The state that is used to exit the FSM.
-     */
-    public private(set) var exitState: CookingState
-
-    /**
-     * All FSM variables used by the machine.
-     */
-    public let fsmVars: SimpleVariablesContainer<CookingVars>
-
-    /**
-     *  The initial state of the previous state.
-     *
-     *  `previousState` is set to this value on restart.
-     */
-    public private(set) var initialPreviousState: CookingState
-
-    /**
-     *  The starting state of the FSM.
-     */
-    public private(set) var initialState: CookingState
-
-    /**
-     *  The name of the FSM.
-     *
-     *  - Warning: This must be unique between FSMs.
-     */
-    public let name: String
-
-    /**
-     *  The last state that was executed.
-     */
-    public var previousState: CookingState
-
-    /**
-     *  An instance of `Ringlet` that is used to execute the states.
-     */
-    public fileprivate(set) var ringlet: CookingRinglet
-
-    fileprivate let submachineFunctions: [() -> AnyControllableFiniteStateMachine]
-
-    /**
-     * All submachines of this machine.
-     */
-    public var submachines: [AnyControllableFiniteStateMachine] {
-        get {
-            return self.submachineFunctions.map { $0() }
-        } set {}    }
-
-    /**
-     *  The state that was the `currentState` before the FSM was suspended.
-     */
-    public var suspendedState: CookingState?
-
-    /**
-     *  The state that is set to `currentState` when the FSM is suspended.
-     */
-    public private(set) var suspendState: CookingState
-
-    public var external_status: WhiteboardVariable<MicrowaveStatus>
-
-    public var external_motor: WhiteboardVariable<Bool>
-
-    internal init(
-        name: String,
-        initialState: CookingState,
-        external_status: WhiteboardVariable<MicrowaveStatus>,
-        external_motor: WhiteboardVariable<Bool>,
-        fsmVars: SimpleVariablesContainer<CookingVars>,
-        ringlet: CookingRinglet,
-        initialPreviousState: CookingState,
-        suspendedState: CookingState?,
-        suspendState: CookingState,
-        exitState: CookingState,
-        submachines: [() -> AnyControllableFiniteStateMachine]
-    ) {
-        self.currentState = initialState
-        self.exitState = exitState
-        self.external_status = external_status
-        self.external_motor = external_motor
-        self.fsmVars = fsmVars
-        self.initialState = initialState
-        self.initialPreviousState = initialPreviousState
-        self.name = name
-        self.previousState = initialPreviousState
-        self.ringlet = ringlet
-        self.submachineFunctions = submachines
-        self.suspendedState = suspendedState
-        self.suspendState = suspendState
-        self.allStates.forEach { $1.Me = self }
-        self.ringlet.Me = self
+    var description: String {
+        "\(KripkeStatePropertyList(self))"
     }
 
-    public func clone() -> CookingFiniteStateMachine {
-        var stateCache: [String: CookingState] = [:]
-        let allStates = self.allStates
-        self.fsmVars.vars = self.fsmVars.vars.clone()
-        var fsm = CookingFiniteStateMachine(
-            name: self.name,
-            initialState: self.initialState.clone(),
-            external_status: self.external_status.clone(),
-            external_motor: self.external_motor.clone(),
-            fsmVars: SimpleVariablesContainer(vars: self.fsmVars.vars.clone()),
-            ringlet: self.ringlet.clone(),
-            initialPreviousState: self.initialPreviousState.clone(),
-            suspendedState: self.suspendedState.map { $0.clone() },
-            suspendState: self.suspendState.clone(),
-            exitState: self.exitState.clone(),
-            submachines: self.submachineFunctions
-        )
-        func apply(_ state: CookingState) -> CookingState {
-            if let s = stateCache[state.name] {
-                return s
+    var computedVars: [String: Any] {
+        return [
+            "externalVariables": Dictionary(uniqueKeysWithValues: externalVariables.map { ($0.name, $0.val) }),
+            "currentState": currentState.name,
+            "isSuspended": isSuspended,
+            "hasFinished": hasFinished
+        ]
+    }
+
+    var status = WhiteboardVariable<MicrowaveStatus>(msgType: kwb_MicrowaveStatus_v)
+
+    var motor = WhiteboardVariable<Bool>(msgType: kwb_motor_v)
+
+    var sensors: [AnySnapshotController] = []
+
+    var actuators: [AnySnapshotController] = []
+
+    var externalVariables: [AnySnapshotController] {
+        get {
+            [AnySnapshotController(status), AnySnapshotController(motor)]
+        } set {
+            if let val = newValue.first(where: { $0.name == status.name })?.val {
+                status.val = val as! MicrowaveStatus
             }
-            var state = state
-            state.Me = fsm
-            stateCache[state.name] = state
-            state.transitions = state.transitions.map {
-                if $0.target == state {
-                    return $0
-                }
-                guard let target = allStates[$0.target.name] else {
-                    return $0
-                }
-                return $0.map { _ in apply(target.clone()) }
+            if let val = newValue.first(where: { $0.name == motor.name })?.val {
+                motor.val = val as! Bool
             }
-            return state
         }
-        fsm.initialState = apply(fsm.initialState)
-        fsm.initialPreviousState = apply(fsm.initialPreviousState)
-        fsm.suspendedState = fsm.suspendedState.map { apply($0) }
-        fsm.suspendState = apply(fsm.suspendState)
-        fsm.exitState = apply(fsm.exitState)
-        fsm.currentState = apply(self.currentState.clone())
-        fsm.previousState = apply(self.previousState.clone())
+    }
+
+    var name: String
+
+    lazy var initialState: MiPalState = {
+        CallbackMiPalState(
+            "Not_Cooking",
+            transitions: [Transition(onState) { [self] _ in !status.val.doorOpen && status.val.timeLeft }],
+            snapshotSensors: [status.name, motor.name],
+            snapshotActuators: [status.name, motor.name],
+            onEntry: { [self] in motor.val = false }
+        )
+    }()
+
+    lazy var onState: MiPalState = {
+        CallbackMiPalState(
+            "Cooking",
+            transitions: [],
+            snapshotSensors: [status.name, motor.name],
+            snapshotActuators: [status.name, motor.name],
+            onEntry: { [self] in motor.val = true }
+        )
+    }()
+
+    lazy var currentState: MiPalState = { initialState }()
+
+    var previousState: MiPalState = EmptyMiPalState("previous")
+
+    var suspendedState: MiPalState? = nil
+
+    var suspendState: MiPalState = EmptyMiPalState("suspend")
+
+    var exitState: MiPalState = EmptyMiPalState("exit", snapshotSensors: [])
+
+    var submachines: [CookingFiniteStateMachine] = []
+
+    var initialPreviousState: MiPalState = EmptyMiPalState("previous")
+
+    var ringlet = MiPalRinglet(previousState: EmptyMiPalState("previous"))
+
+    func clone() -> CookingFiniteStateMachine {
+        let fsm = CookingFiniteStateMachine(name: name, status: status, motor: motor)
+        fsm.name = name
+        if currentState.name == initialState.name {
+            fsm.currentState = fsm.initialState
+        } else if currentState.name == onState.name {
+            fsm.currentState = fsm.onState
+        }
+        if previousState.name == initialState.name {
+            fsm.previousState = fsm.initialState
+        } else if previousState.name == onState.name {
+            fsm.previousState = fsm.onState
+        }
+        fsm.status = status.clone()
+        fsm.motor = motor.clone()
+        fsm.ringlet = ringlet.clone()
+        if fsm.ringlet.previousState.name == initialState.name {
+            fsm.ringlet.previousState = fsm.initialState
+        } else if fsm.ringlet.previousState.name == onState.name {
+            fsm.ringlet.previousState = fsm.onState
+        }
         return fsm
     }
 
-}
-
-extension CookingFiniteStateMachine: CustomStringConvertible {
-
-    var description: String {
-        return """
-            {
-                name: \(self.name),
-                external_status: \(self.external_status),
-                fsmVars: \(self.fsmVars.vars),
-                initialState: \(self.initialState.name),
-                currentState: \(self.currentState.name),
-                previousState: \(self.previousState.name),
-                suspendState: \(self.suspendState.name),
-                suspendedState: \(self.suspendedState.map { $0.name }),
-                exitState: \(self.exitState.name),
-                states: \(self.allStates)
-            }
-            """
+    init(name: String, status: WhiteboardVariable<MicrowaveStatus>, motor: WhiteboardVariable<Bool>) {
+        self.name = name
+        self.status = status
+        self.motor = motor
+        self.onState.addTransition(Transition(initialState) { [self] _ in self.status.val.doorOpen || !self.status.val.timeLeft })
     }
 
 }

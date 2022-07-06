@@ -1,114 +1,19 @@
+
+import FSM
+import KripkeStructure
+import Gateways
+import Timers
+import Verification
 import swiftfsm
 import SwiftfsmWBWrappers
 
-internal final class LightFiniteStateMachine: MachineProtocol {
+final class LightFiniteStateMachine: MachineProtocol, CustomStringConvertible {
 
-    public typealias _StateType = LightState
+    typealias _StateType = MiPalState
+    typealias Ringlet = MiPalRinglet
 
-    fileprivate var allStates: [String: LightState] {
-        var stateCache: [String: LightState] = [:]
-        func fetchAllStates(fromState state: LightState) {
-            if stateCache[state.name] != nil {
-                return
-            }
-            stateCache[state.name] = state
-            state.transitions.forEach {
-                fetchAllStates(fromState: $0.target)
-            }
-        }
-        fetchAllStates(fromState: self.initialState)
-        fetchAllStates(fromState: self.suspendState)
-        fetchAllStates(fromState: self.exitState)
-        return stateCache
-    }
-
-    public var computedVars: [String: Any] {
-        return [
-            "sensors": Dictionary<String, Any>(uniqueKeysWithValues: self.sensors.map {
-                ($0.name, $0.val)
-            }),
-            "actuators": Dictionary<String, Any>(uniqueKeysWithValues: self.actuators.map {
-                ($0.name, $0.val)
-            }),
-            "externalVariables": Dictionary<String, Any>(uniqueKeysWithValues: self.externalVariables.map {
-                ($0.name, $0.val)
-            }),
-            "currentState": self.currentState.name,
-            "fsmVars": self.fsmVars.vars,
-            "states": self.allStates,
-        ]
-    }
-
-    /**
-     * All external variables used by the machine.
-     */
-    public var externalVariables: [AnySnapshotController] {
-        get {
-            return [AnySnapshotController(external_status), AnySnapshotController(external_light)]
-        } set {
-            print("setting external variables: \(newValue.map(\.name))")
-            for external in newValue {
-                switch external.name {
-                case self.external_status.name:
-                    self.external_status.val = external.val as! WhiteboardVariable<MicrowaveStatus>.Class
-                case self.external_light.name:
-                    self.external_light.val = external.val as! WhiteboardVariable<Bool>.Class
-                default:
-                    continue
-                }
-            }
-        }
-    }
-
-    public var sensors: [AnySnapshotController] {
-        get {
-            return []
-        } set {
-            print("setting sensors: \(newValue.map(\.name))")
-        }
-    }
-
-    public var actuators: [AnySnapshotController] {
-        get {
-            return []
-        } set {
-        }
-    }
-
-    public var snapshotSensors: [AnySnapshotController] {
-        guard let snapshotSensors = self.currentState.snapshotSensors else {
-            return []
-        }
-        return snapshotSensors.map { (label: String) -> AnySnapshotController in
-            switch label {
-            case "status":
-                return AnySnapshotController(self.external_status)
-            case "light":
-                return AnySnapshotController(self.external_light)
-            default:
-                fatalError("Unable to find sensor \(label).")
-            }
-        }
-    }
-
-    public var snapshotActuators: [AnySnapshotController] {
-        guard let snapshotActuators = self.currentState.snapshotActuators else {
-            return []
-        }
-        return snapshotActuators.map { (label: String) -> AnySnapshotController in
-            switch label {
-            case "status":
-                return AnySnapshotController(self.external_status)
-            case "light":
-                return AnySnapshotController(self.external_light)
-            default:
-                fatalError("Unable to find actuator \(label).")
-            }
-        }
-    }
-
-    public var validVars: [String: [Any]] {
-        return [
+    var validVars: [String: [Any]] {
+        [
             "currentState": [],
             "exitState": [],
             "externalVariables": [],
@@ -125,173 +30,116 @@ internal final class LightFiniteStateMachine: MachineProtocol {
             "submachines": [],
             "suspendedState": [],
             "suspendState": [],
-            "external_status": [],
-            "external_light": []
+            "status": [],
+            "light": [],
+            "onState": [],
+            "$__lazy_storage_$_currentState": [],
+            "$__lazy_storage_$_initialState": [],
+            "$__lazy_storage_$_onState": []
         ]
     }
 
-    /**
-     *  The state that is currently executing.
-     */
-    public var currentState: LightState
-
-    /**
-     *  The state that is used to exit the FSM.
-     */
-    public private(set) var exitState: LightState
-
-    /**
-     * All FSM variables used by the machine.
-     */
-    public let fsmVars: SimpleVariablesContainer<LightVars>
-
-    /**
-     *  The initial state of the previous state.
-     *
-     *  `previousState` is set to this value on restart.
-     */
-    public private(set) var initialPreviousState: LightState
-
-    /**
-     *  The starting state of the FSM.
-     */
-    public private(set) var initialState: LightState
-
-    /**
-     *  The name of the FSM.
-     *
-     *  - Warning: This must be unique between FSMs.
-     */
-    public let name: String
-
-    /**
-     *  The last state that was executed.
-     */
-    public var previousState: LightState
-
-    /**
-     *  An instance of `Ringlet` that is used to execute the states.
-     */
-    public fileprivate(set) var ringlet: LightRinglet
-
-    fileprivate let submachineFunctions: [() -> AnyControllableFiniteStateMachine]
-
-    /**
-     * All submachines of this machine.
-     */
-    public var submachines: [AnyControllableFiniteStateMachine] {
-        get {
-            return self.submachineFunctions.map { $0() }
-        } set {}    }
-
-    /**
-     *  The state that was the `currentState` before the FSM was suspended.
-     */
-    public var suspendedState: LightState?
-
-    /**
-     *  The state that is set to `currentState` when the FSM is suspended.
-     */
-    public private(set) var suspendState: LightState
-
-    public var external_status: WhiteboardVariable<MicrowaveStatus>
-
-    public var external_light: WhiteboardVariable<Bool>
-
-    internal init(
-        name: String,
-        initialState: LightState,
-        external_status: WhiteboardVariable<MicrowaveStatus>,
-        external_light: WhiteboardVariable<Bool>,
-        fsmVars: SimpleVariablesContainer<LightVars>,
-        ringlet: LightRinglet,
-        initialPreviousState: LightState,
-        suspendedState: LightState?,
-        suspendState: LightState,
-        exitState: LightState,
-        submachines: [() -> AnyControllableFiniteStateMachine]
-    ) {
-        self.currentState = initialState
-        self.exitState = exitState
-        self.external_status = external_status
-        self.external_light = external_light
-        self.fsmVars = fsmVars
-        self.initialState = initialState
-        self.initialPreviousState = initialPreviousState
-        self.name = name
-        self.previousState = initialPreviousState
-        self.ringlet = ringlet
-        self.submachineFunctions = submachines
-        self.suspendedState = suspendedState
-        self.suspendState = suspendState
-        self.allStates.forEach { $1.Me = self }
-        self.ringlet.Me = self
+    var description: String {
+        "\(KripkeStatePropertyList(self))"
     }
 
-    public func clone() -> LightFiniteStateMachine {
-        var stateCache: [String: LightState] = [:]
-        let allStates = self.allStates
-        self.fsmVars.vars = self.fsmVars.vars.clone()
-        var fsm = LightFiniteStateMachine(
-            name: self.name,
-            initialState: self.initialState.clone(),
-            external_status: self.external_status.clone(),
-            external_light: self.external_light.clone(),
-            fsmVars: SimpleVariablesContainer(vars: self.fsmVars.vars.clone()),
-            ringlet: self.ringlet.clone(),
-            initialPreviousState: self.initialPreviousState.clone(),
-            suspendedState: self.suspendedState.map { $0.clone() },
-            suspendState: self.suspendState.clone(),
-            exitState: self.exitState.clone(),
-            submachines: self.submachineFunctions
-        )
-        func apply(_ state: LightState) -> LightState {
-            if let s = stateCache[state.name] {
-                return s
+    var computedVars: [String: Any] {
+        return [
+            "externalVariables": Dictionary(uniqueKeysWithValues: externalVariables.map { ($0.name, $0.val) }),
+            "currentState": currentState.name,
+            "isSuspended": isSuspended,
+            "hasFinished": hasFinished
+        ]
+    }
+
+    var status = WhiteboardVariable<MicrowaveStatus>(msgType: kwb_MicrowaveStatus_v)
+
+    var light = WhiteboardVariable<Bool>(msgType: kwb_light_v)
+
+    var sensors: [AnySnapshotController] = []
+
+    var actuators: [AnySnapshotController] = []
+
+    var externalVariables: [AnySnapshotController] {
+        get {
+            [AnySnapshotController(status), AnySnapshotController(light)]
+        } set {
+            if let val = newValue.first(where: { $0.name == status.name })?.val {
+                status.val = val as! MicrowaveStatus
             }
-            var state = state
-            state.Me = fsm
-            stateCache[state.name] = state
-            state.transitions = state.transitions.map {
-                if $0.target == state {
-                    return $0
-                }
-                guard let target = allStates[$0.target.name] else {
-                    return $0
-                }
-                return $0.map { _ in apply(target.clone()) }
+            if let val = newValue.first(where: { $0.name == light.name })?.val {
+                light.val = val as! Bool
             }
-            return state
         }
-        fsm.initialState = apply(fsm.initialState)
-        fsm.initialPreviousState = apply(fsm.initialPreviousState)
-        fsm.suspendedState = fsm.suspendedState.map { apply($0) }
-        fsm.suspendState = apply(fsm.suspendState)
-        fsm.exitState = apply(fsm.exitState)
-        fsm.currentState = apply(self.currentState.clone())
-        fsm.previousState = apply(self.previousState.clone())
+    }
+
+    var name: String
+
+    lazy var initialState: MiPalState = {
+        CallbackMiPalState(
+            "Off",
+            transitions: [Transition(onState) { [self] _ in status.val.doorOpen || status.val.timeLeft }],
+            snapshotSensors: [status.name, light.name],
+            snapshotActuators: [status.name, light.name],
+            onEntry: { [self] in light.val = false }
+        )
+    }()
+
+    lazy var onState: MiPalState = {
+        CallbackMiPalState(
+            "On",
+            transitions: [],
+            snapshotSensors: [status.name, light.name],
+            snapshotActuators: [status.name, light.name],
+            onEntry: { [self] in light.val = true }
+        )
+    }()
+
+    lazy var currentState: MiPalState = { initialState }()
+
+    var previousState: MiPalState = EmptyMiPalState("previous")
+
+    var suspendedState: MiPalState? = nil
+
+    var suspendState: MiPalState = EmptyMiPalState("suspend")
+
+    var exitState: MiPalState = EmptyMiPalState("exit", snapshotSensors: [])
+
+    var submachines: [LightFiniteStateMachine] = []
+
+    var initialPreviousState: MiPalState = EmptyMiPalState("previous")
+
+    var ringlet = MiPalRinglet(previousState: EmptyMiPalState("previous"))
+
+    func clone() -> LightFiniteStateMachine {
+        let fsm = LightFiniteStateMachine(name: name, status: status, light: light)
+        fsm.name = name
+        if currentState.name == initialState.name {
+            fsm.currentState = fsm.initialState
+        } else if currentState.name == onState.name {
+            fsm.currentState = fsm.onState
+        }
+        if previousState.name == initialState.name {
+            fsm.previousState = fsm.initialState
+        } else if previousState.name == onState.name {
+            fsm.previousState = fsm.onState
+        }
+        fsm.status = status.clone()
+        fsm.light = light.clone()
+        fsm.ringlet = ringlet.clone()
+        if fsm.ringlet.previousState.name == initialState.name {
+            fsm.ringlet.previousState = fsm.initialState
+        } else if fsm.ringlet.previousState.name == onState.name {
+            fsm.ringlet.previousState = fsm.onState
+        }
         return fsm
     }
 
-}
-
-extension LightFiniteStateMachine: CustomStringConvertible {
-
-    var description: String {
-        return """
-            {
-                name: \(self.name),
-                external_status: \(self.external_status),
-                fsmVars: \(self.fsmVars.vars),
-                initialState: \(self.initialState.name),
-                currentState: \(self.currentState.name),
-                previousState: \(self.previousState.name),
-                suspendState: \(self.suspendState.name),
-                suspendedState: \(self.suspendedState.map { $0.name }),
-                exitState: \(self.exitState.name),
-                states: \(self.allStates)
-            }
-            """
+    init(name: String, status: WhiteboardVariable<MicrowaveStatus>, light: WhiteboardVariable<Bool>) {
+        self.name = name
+        self.status = status
+        self.light = light
+        self.onState.addTransition(Transition(initialState) { [self] _ in !self.status.val.doorOpen && !self.status.val.timeLeft })
     }
 
 }

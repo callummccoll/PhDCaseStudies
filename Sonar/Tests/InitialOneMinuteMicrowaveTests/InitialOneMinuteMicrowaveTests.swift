@@ -270,11 +270,10 @@ class InitialOneMinuteMicrowaveTests: XCTestCase {
             scheduleLength: gap * 4 + timeslotLength * 4
         )
         let timer = make_Timer(gateway: gateway, clock: clock, status: WhiteboardVariable(msgType: kwb_MicrowaveStatus_v)).0
-        let alarm = make_Alarm(gateway: gateway, clock: clock, status: WhiteboardVariable(msgType: kwb_MicrowaveStatus_v), sound: WhiteboardVariable(msgType: kwb_sound_v)).0
-        let cooking = make_Cooking(gateway: gateway, clock: clock, status: WhiteboardVariable(msgType: kwb_MicrowaveStatus_v), motor: WhiteboardVariable(msgType: kwb_motor_v)).0
-        let light = make_Light(gateway: gateway, clock: clock, status: WhiteboardVariable(msgType: kwb_MicrowaveStatus_v), light: WhiteboardVariable(msgType: kwb_light_v)).0
-        let combinations = Array(Combinations(fsms: [light.asScheduleableFiniteStateMachine]))
-        let machines: [FSMType] = [timer, alarm, cooking, light]
+        let alarm = AnyControllableFiniteStateMachine(AlarmFiniteStateMachine(name: "Alarm", status: WhiteboardVariable(msgType: kwb_MicrowaveStatus_v), sound: WhiteboardVariable(msgType: kwb_sound_v), clock: clock))
+        let cooking = AnyControllableFiniteStateMachine(CookingFiniteStateMachine(name: "Cooking", status: WhiteboardVariable(msgType: kwb_MicrowaveStatus_v), motor: WhiteboardVariable(msgType: kwb_motor_v)))
+        let light = AnyControllableFiniteStateMachine(LightFiniteStateMachine(name: "Light", status: WhiteboardVariable(msgType: kwb_MicrowaveStatus_v), light: WhiteboardVariable(msgType: kwb_light_v)))
+        let machines: [FSMType] = [timer, .controllableFSM(alarm), .controllableFSM(cooking), .controllableFSM(light)]
         let threads: [IsolatedThread] = machines.enumerated().map { (index: Int, machine: FSMType) in
             IsolatedThread(
                 map: VerificationMap(
@@ -311,7 +310,7 @@ class InitialOneMinuteMicrowaveTests: XCTestCase {
                 pool: FSMPool(fsms: [machine], parameterisedFSMs: [])
             )
         }
-       let verifier = ScheduleVerifier(
+        let verifier = ScheduleVerifier(
             isolatedThreads: ScheduleIsolator(
                 threads: threads,
                 parameterisedThreads: [:],
@@ -355,10 +354,10 @@ class InitialOneMinuteMicrowaveTests: XCTestCase {
             scheduleLength: gap * 4 + timeslotLength * 4
         )
         let timer = make_Timer(gateway: gateway, clock: clock, status: WhiteboardVariable(msgType: kwb_MicrowaveStatus_v)).0
-        let alarm = make_Alarm(gateway: gateway, clock: clock, status: WhiteboardVariable(msgType: kwb_MicrowaveStatus_v), sound: WhiteboardVariable(msgType: kwb_sound_v)).0
-        let cooking = make_Cooking(gateway: gateway, clock: clock, status: WhiteboardVariable(msgType: kwb_MicrowaveStatus_v), motor: WhiteboardVariable(msgType: kwb_motor_v)).0
-        let light = make_Light(gateway: gateway, clock: clock, status: WhiteboardVariable(msgType: kwb_MicrowaveStatus_v), light: WhiteboardVariable(msgType: kwb_light_v)).0
-        let machines: [FSMType] = [timer, alarm, cooking, light]
+        let alarm = AnyControllableFiniteStateMachine(AlarmFiniteStateMachine(name: "Alarm", status: WhiteboardVariable(msgType: kwb_MicrowaveStatus_v), sound: WhiteboardVariable(msgType: kwb_sound_v), clock: clock))
+        let cooking = AnyControllableFiniteStateMachine(CookingFiniteStateMachine(name: "Cooking", status: WhiteboardVariable(msgType: kwb_MicrowaveStatus_v), motor: WhiteboardVariable(msgType: kwb_motor_v)))
+        let light = AnyControllableFiniteStateMachine(LightFiniteStateMachine(name: "Light", status: WhiteboardVariable(msgType: kwb_MicrowaveStatus_v), light: WhiteboardVariable(msgType: kwb_light_v)))
+        let machines: [FSMType] = [timer, .controllableFSM(alarm), .controllableFSM(cooking), .controllableFSM(light)]
         let steps: [VerificationMap.Step] = machines.enumerated().flatMap { (index: Int, machine: FSMType) -> [VerificationMap.Step] in
             [
                 VerificationMap.Step(
