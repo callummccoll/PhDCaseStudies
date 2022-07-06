@@ -26,6 +26,16 @@ let package = Package(
             ]
         ),
         .target(
+            name: "TimerActuatorMicrowave",
+            dependencies: [
+                "FSM",
+                "SwiftfsmWBWrappers",
+                .product(name: "Verification", package: "swiftfsm"),
+                //.product(name: "Verification", package: "swiftfsm"),
+                //.product(name: "SwiftfsmWBWrappers", package: "SwiftfsmWBWrappers")
+            ]
+        ),
+        .target(
             name: "Sonar",
             dependencies: [
                 "FSM",
@@ -49,6 +59,17 @@ let package = Package(
             name: "InitialOneMinuteMicrowaveTests",
             dependencies: [
                 "InitialOneMinuteMicrowave",
+                "FSM",
+                "SwiftfsmWBWrappers",
+                .product(name: "swiftfsm_binaries", package: "swiftfsm"),
+                .product(name: "Verification", package: "swiftfsm")
+                //.product(name: "SwiftfsmWBWrappers", package: "SwiftfsmWBWrappers")
+            ]
+        ),
+        .testTarget(
+            name: "TimerActuatorMicrowaveTests",
+            dependencies: [
+                "TimerActuatorMicrowave",
                 "FSM",
                 "SwiftfsmWBWrappers",
                 .product(name: "swiftfsm_binaries", package: "swiftfsm"),
