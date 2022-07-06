@@ -269,11 +269,11 @@ class InitialOneMinuteMicrowaveTests: XCTestCase {
             ringletLengths: ["Timer": 30, "Alarm": 30, "Cooking": 30, "Light": 30],
             scheduleLength: gap * 4 + timeslotLength * 4
         )
-        let timer = make_Timer(gateway: gateway, clock: clock, status: WhiteboardVariable(msgType: kwb_MicrowaveStatus_v)).0
+        let timer = AnyControllableFiniteStateMachine(TimerFiniteStateMachine(name: "Timer", status: WhiteboardVariable(msgType: kwb_MicrowaveStatus_v), clock: clock))
         let alarm = AnyControllableFiniteStateMachine(AlarmFiniteStateMachine(name: "Alarm", status: WhiteboardVariable(msgType: kwb_MicrowaveStatus_v), sound: WhiteboardVariable(msgType: kwb_sound_v), clock: clock))
         let cooking = AnyControllableFiniteStateMachine(CookingFiniteStateMachine(name: "Cooking", status: WhiteboardVariable(msgType: kwb_MicrowaveStatus_v), motor: WhiteboardVariable(msgType: kwb_motor_v)))
         let light = AnyControllableFiniteStateMachine(LightFiniteStateMachine(name: "Light", status: WhiteboardVariable(msgType: kwb_MicrowaveStatus_v), light: WhiteboardVariable(msgType: kwb_light_v)))
-        let machines: [FSMType] = [timer, .controllableFSM(alarm), .controllableFSM(cooking), .controllableFSM(light)]
+        let machines: [FSMType] = [.controllableFSM(timer), .controllableFSM(alarm), .controllableFSM(cooking), .controllableFSM(light)]
         let threads: [IsolatedThread] = machines.enumerated().map { (index: Int, machine: FSMType) in
             IsolatedThread(
                 map: VerificationMap(
@@ -353,11 +353,11 @@ class InitialOneMinuteMicrowaveTests: XCTestCase {
             ringletLengths: ["Timer": 30, "Alarm": 30, "Cooking": 30, "Light": 30],
             scheduleLength: gap * 4 + timeslotLength * 4
         )
-        let timer = make_Timer(gateway: gateway, clock: clock, status: WhiteboardVariable(msgType: kwb_MicrowaveStatus_v)).0
+        let timer = AnyControllableFiniteStateMachine(TimerFiniteStateMachine(name: "Timer", status: WhiteboardVariable(msgType: kwb_MicrowaveStatus_v), clock: clock))
         let alarm = AnyControllableFiniteStateMachine(AlarmFiniteStateMachine(name: "Alarm", status: WhiteboardVariable(msgType: kwb_MicrowaveStatus_v), sound: WhiteboardVariable(msgType: kwb_sound_v), clock: clock))
         let cooking = AnyControllableFiniteStateMachine(CookingFiniteStateMachine(name: "Cooking", status: WhiteboardVariable(msgType: kwb_MicrowaveStatus_v), motor: WhiteboardVariable(msgType: kwb_motor_v)))
         let light = AnyControllableFiniteStateMachine(LightFiniteStateMachine(name: "Light", status: WhiteboardVariable(msgType: kwb_MicrowaveStatus_v), light: WhiteboardVariable(msgType: kwb_light_v)))
-        let machines: [FSMType] = [timer, .controllableFSM(alarm), .controllableFSM(cooking), .controllableFSM(light)]
+        let machines: [FSMType] = [.controllableFSM(timer), .controllableFSM(alarm), .controllableFSM(cooking), .controllableFSM(light)]
         let steps: [VerificationMap.Step] = machines.enumerated().flatMap { (index: Int, machine: FSMType) -> [VerificationMap.Step] in
             [
                 VerificationMap.Step(
