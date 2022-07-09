@@ -265,12 +265,19 @@ class ParameterisedSonarTests: XCTestCase {
         let gateway = StackGateway()
         let timeslotLength: UInt = 244
         let clock = FSMClock(
-            ringletLengths: ["Caller": timeslotLength],
-            scheduleLength: timeslotLength
+            ringletLengths: [
+                "Caller": timeslotLength,
+                "Sonar23": timeslotLength,
+                "Sonar45": timeslotLength,
+                "Sonar67": timeslotLength
+            ],
+            scheduleLength: timeslotLength * 2
         )
         let caller = make_Caller(gateway: gateway, clock: clock).0
         let callerID = gateway.id(of: caller.name)
-        let sonar = make_Sonar(gateway: gateway, clock: clock, caller: callerID, echoPin: kwb_Arduino2Pin_v, triggerPin: kwb_Arduino3Pin_v, echoPinValue: kwb_Arduino2PinValue_v).0
+        let sonar23 = make_Sonar(name: "Sonar23", gateway: gateway, clock: clock, caller: callerID, echoPin: kwb_Arduino2Pin_v, triggerPin: kwb_Arduino3Pin_v, echoPinValue: kwb_Arduino2PinValue_v).0
+        let sonar45 = make_Sonar(name: "Sonar45", gateway: gateway, clock: clock, caller: callerID, echoPin: kwb_Arduino4Pin_v, triggerPin: kwb_Arduino4Pin_v, echoPinValue: kwb_Arduino5PinValue_v).0
+        let sonar67 = make_Sonar(name: "Sonar67", gateway: gateway, clock: clock, caller: callerID, echoPin: kwb_Arduino4Pin_v, triggerPin: kwb_Arduino6Pin_v, echoPinValue: kwb_Arduino7PinValue_v).0
         let callerTimeslot = Timeslot(
             fsms: [caller.name],
             callChain: CallChain(root: caller.name, calls: []),
@@ -279,11 +286,27 @@ class ParameterisedSonarTests: XCTestCase {
             duration: timeslotLength,
             cyclesExecuted: 0
         )
-        let sonarTimeslot = Timeslot(
-            fsms: [sonar.name],
-            callChain: CallChain(root: sonar.name, calls: []),
+        let sonar23Timeslot = Timeslot(
+            fsms: [sonar23.name],
+            callChain: CallChain(root: sonar23.name, calls: []),
             externalDependencies: [],
-            startingTime: 0,
+            startingTime: timeslotLength,
+            duration: timeslotLength,
+            cyclesExecuted: 0
+        )
+        let sonar45Timeslot = Timeslot(
+            fsms: [sonar45.name],
+            callChain: CallChain(root: sonar45.name, calls: []),
+            externalDependencies: [],
+            startingTime: timeslotLength,
+            duration: timeslotLength,
+            cyclesExecuted: 0
+        )
+        let sonar67Timeslot = Timeslot(
+            fsms: [sonar67.name],
+            callChain: CallChain(root: sonar67.name, calls: []),
+            externalDependencies: [],
+            startingTime: timeslotLength,
             duration: timeslotLength,
             cyclesExecuted: 0
         )
@@ -300,27 +323,59 @@ class ParameterisedSonarTests: XCTestCase {
                             step: .executeAndSaveSnapshot(timeslot: callerTimeslot)
                         )
                     ],
-                    delegates: [sonar.name]
+                    delegates: [sonar23.name, sonar45.name, sonar67.name]
                 ),
-                pool: FSMPool(fsms: [caller, sonar], parameterisedFSMs: [sonar.name])
+                pool: FSMPool(fsms: [caller, sonar23, sonar45, sonar67], parameterisedFSMs: [sonar23.name, sonar45.name, sonar67.name])
             )
         ]
         let parameterisedThreads = [
-            sonar.name: IsolatedThread(
+            sonar23.name: IsolatedThread(
                 map: VerificationMap(
                     steps: [
                         VerificationMap.Step(
-                            time: 0,
-                            step: .takeSnapshotAndStartTimeslot(timeslot: sonarTimeslot)
+                            time: timeslotLength,
+                            step: .takeSnapshotAndStartTimeslot(timeslot: sonar23Timeslot)
                         ),
                         VerificationMap.Step(
-                            time: timeslotLength,
-                            step: .executeAndSaveSnapshot(timeslot: sonarTimeslot)
+                            time: timeslotLength * 2,
+                            step: .executeAndSaveSnapshot(timeslot: sonar23Timeslot)
                         )
                     ],
                     delegates: []
                 ),
-                pool: FSMPool(fsms: [sonar], parameterisedFSMs: [])
+                pool: FSMPool(fsms: [sonar23], parameterisedFSMs: [])
+            ),
+            sonar45.name: IsolatedThread(
+                map: VerificationMap(
+                    steps: [
+                        VerificationMap.Step(
+                            time: timeslotLength,
+                            step: .takeSnapshotAndStartTimeslot(timeslot: sonar45Timeslot)
+                        ),
+                        VerificationMap.Step(
+                            time: timeslotLength * 2,
+                            step: .executeAndSaveSnapshot(timeslot: sonar45Timeslot)
+                        )
+                    ],
+                    delegates: []
+                ),
+                pool: FSMPool(fsms: [sonar45], parameterisedFSMs: [])
+            ),
+            sonar67.name: IsolatedThread(
+                map: VerificationMap(
+                    steps: [
+                        VerificationMap.Step(
+                            time: timeslotLength,
+                            step: .takeSnapshotAndStartTimeslot(timeslot: sonar67Timeslot)
+                        ),
+                        VerificationMap.Step(
+                            time: timeslotLength * 2,
+                            step: .executeAndSaveSnapshot(timeslot: sonar67Timeslot)
+                        )
+                    ],
+                    delegates: []
+                ),
+                pool: FSMPool(fsms: [sonar67], parameterisedFSMs: [])
             )
         ]
         let verifier = ScheduleVerifier(
@@ -332,7 +387,7 @@ class ParameterisedSonarTests: XCTestCase {
         )
         let viewFactory = TestableViewFactory { name in
             switch name {
-            case caller.name, sonar.name:
+            case caller.name, sonar23.name, sonar45.name, sonar67.name:
                 return TestableView(identifier: name, expectedIdentifier: name, expected: [])
             default:
                 XCTFail("Unexepected view name: \(name)")
