@@ -5,6 +5,13 @@ import PackageDescription
 
 let package = Package(
     name: "Sonar",
+    products: [
+        .library(name: "InitialOneMinuteMicrowave", targets: ["InitialOneMinuteMicrowave"]),
+        .library(name: "TimerActuatorMicrowave", targets: ["TimerActuatorMicrowave"]),
+        .library(name: "FinalOneMinuteMicrowave", targets: ["FinalOneMinuteMicrowave"]),
+        .library(name: "Sonar", targets: ["Sonar"]),
+        .library(name: "ParameterisedSonar", targets: ["ParameterisedSonar"])
+    ],
     dependencies: [
         // Dependencies declare other packages that this package depends on.
         // .package(url: /* package url */, from: "1.0.0"),
