@@ -70,109 +70,84 @@ import SwiftfsmWBWrappers
 
 class SonarTests: XCTestCase {
     
-    public final class InMemoryStore: MutableKripkeStructure {
+    final class InMemoryStore: MutableKripkeStructure {
 
-        public let identifier: String
+        let identifier: String
 
         private var latestId: Int64 = 0
 
         private var ids: [KripkeStatePropertyList: Int64] = [:]
 
-        private var jobs: Set<KripkeStatePropertyList> = []
-
         var allStates: [Int64: (KripkeStatePropertyList, Bool, Set<KripkeEdge>)] = [:]
 
-        public var acceptingStates: AnySequence<KripkeState> {
-            DispatchQueue.global(qos: .userInteractive).sync {
-                AnySequence(states.filter { $0.edges.isEmpty })
-            }
+        var acceptingStates: AnySequence<KripkeState> {
+            AnySequence(states.filter { $0.edges.isEmpty })
         }
 
-        public var initialStates: AnySequence<KripkeState> {
-            DispatchQueue.global(qos: .userInteractive).sync {
-                AnySequence(states.filter { $0.isInitial })
-            }
+        var initialStates: AnySequence<KripkeState> {
+            AnySequence(states.filter { $0.isInitial })
         }
 
-        public var states: AnySequence<KripkeState> {
-            DispatchQueue.global(qos: .userInteractive).sync {
-                AnySequence(allStates.keys.map {
-                    try! self.state(for: $0)
-                })
-            }
+        var states: AnySequence<KripkeState> {
+            AnySequence(allStates.keys.map {
+                try! self.state(for: $0)
+            })
         }
 
-        init(identifier: String) {
-            self.identifier = identifier
-        }
-
-        init(identifier: String, states: Set<KripkeState>) throws {
+        init(identifier: String, states: Set<KripkeState>) {
             self.identifier = identifier
             for state in states {
-                let (id, _) = try self.add(state.properties, isInitial: state.isInitial)
+                let id = try! self.add(state.properties, isInitial: state.isInitial)
                 for edge in state.edges {
-                    try self.add(edge: edge, to: id)
+                    try! self.add(edge: edge, to: id)
                 }
             }
         }
 
-        public func add(_ propertyList: KripkeStatePropertyList, isInitial: Bool) throws -> (Int64, Bool) {
-            try DispatchQueue.global(qos: .userInteractive).sync {
-                let id = try id(for: propertyList)
-                let inCycle = nil != allStates[id]
-                if !inCycle {
-                    allStates[id] = (propertyList, isInitial, [])
-                }
-                return (id, inCycle)
+        func add(_ propertyList: KripkeStatePropertyList, isInitial: Bool) throws -> Int64 {
+            let id = try id(for: propertyList)
+            if nil == allStates[id] {
+                allStates[id] = (propertyList, isInitial, [])
             }
+            return id
         }
 
-        public func add(edge: KripkeEdge, to id: Int64) throws {
-            _ = DispatchQueue.global(qos: .userInteractive).sync {
-                allStates[id]?.2.insert(edge)
-            }
+        func add(edge: KripkeEdge, to id: Int64) throws {
+            allStates[id]?.2.insert(edge)
         }
 
-        public func markAsInitial(id: Int64) throws {
-            DispatchQueue.global(qos: .userInteractive).sync {
-                self.allStates[id]?.1 = true
-            }
+        func markAsInitial(id: Int64) throws {
+            allStates[id]?.1 = true
         }
 
-        public func exists(_ propertyList: KripkeStatePropertyList) throws -> Bool {
-            DispatchQueue.global(qos: .userInteractive).sync {
-                return nil != ids[propertyList]
-            }
+        func exists(_ propertyList: KripkeStatePropertyList) throws -> Bool {
+            return nil != ids[propertyList]
         }
 
-        public func data(for propertyList: KripkeStatePropertyList) throws -> (Int64, KripkeState) {
+        func data(for propertyList: KripkeStatePropertyList) throws -> (Int64, KripkeState) {
             let id = try id(for: propertyList)
             return try (id, state(for: id))
         }
 
-        public func id(for propertyList: KripkeStatePropertyList) throws -> Int64 {
-            DispatchQueue.global(qos: .userInteractive).sync {
-                if let id = ids[propertyList] {
-                    return id
-                }
-                let id = latestId
-                latestId += 1
-                ids[propertyList] = id
+        func id(for propertyList: KripkeStatePropertyList) throws -> Int64 {
+            if let id = ids[propertyList] {
                 return id
             }
+            let id = latestId
+            latestId += 1
+            ids[propertyList] = id
+            return id
         }
 
-        public func state(for id: Int64) throws -> KripkeState {
-            DispatchQueue.global(qos: .userInteractive).sync {
-                guard let (plist, isInitial, edges) = allStates[id] else {
-                    fatalError("State does not exist")
-                }
-                let state = KripkeState(isInitial: isInitial, properties: plist)
-                for edge in edges {
-                    state.addEdge(edge)
-                }
-                return state
+        func state(for id: Int64) throws -> KripkeState {
+            guard let (plist, isInitial, edges) = allStates[id] else {
+                fatalError("State does not exist")
             }
+            let state = KripkeState(isInitial: isInitial, properties: plist)
+            for edge in edges {
+                state.addEdge(edge)
+            }
+            return state
         }
 
 
@@ -269,7 +244,7 @@ class SonarTests: XCTestCase {
             print("extraneous results: \(extraneousElements)")
             let expectedView = GraphVizKripkeStructureView(filename: "\(name)expected.gv")
             let resultView = GraphVizKripkeStructureView(filename: "\(name)result.gv")
-            let expectedStore = try! InMemoryStore(identifier: expectedIdentifier, states: expected)
+            let expectedStore = InMemoryStore(identifier: expectedIdentifier, states: expected)
             try! expectedView.generate(store: expectedStore, usingClocks: true)
             try! resultView.generate(store: store, usingClocks: true)
             print("Writing expected to: \(FileManager.default.currentDirectoryPath)/\(name)expected.gv")
@@ -286,7 +261,7 @@ class SonarTests: XCTestCase {
         // Put teardown code here. This method is called after the invocation of each test method in the class.
     }
     
-    func test_canGenerateParallelSonarMachines() async {
+    func test_canGenerateParallelSonarMachines() {
         let wbVars = [
             ("Sonar23", kwb_Arduino2Pin_v, kwb_Arduino3Pin_v, kwb_Arduino2PinValue_v),
             ("Sonar45", kwb_Arduino4Pin_v, kwb_Arduino5Pin_v, kwb_Arduino4PinValue_v),
@@ -362,7 +337,7 @@ class SonarTests: XCTestCase {
         }
         let factory = SQLiteKripkeStructureFactory(savingInDirectory: "/tmp/swiftfsm/\(readableName)")
         do {
-            try await verifier.verify(gateway: gateway, timer: clock, factory: factory).forEach {
+            try verifier.verify(gateway: gateway, timer: clock, factory: factory).forEach {
                 try viewFactory.make(identifier: $0.identifier).generate(store: $0, usingClocks: true)
             }
         } catch {
@@ -378,7 +353,7 @@ class SonarTests: XCTestCase {
         }
     }
     
-    func test_canGenerateSonarMachines() async {
+    func test_canGenerateSonarMachines() {
         let wbVars = [
             ("Sonar23", kwb_Arduino2Pin_v, kwb_Arduino3Pin_v, kwb_Arduino2PinValue_v),
             ("Sonar45", kwb_Arduino4Pin_v, kwb_Arduino5Pin_v, kwb_Arduino4PinValue_v),
@@ -454,7 +429,7 @@ class SonarTests: XCTestCase {
         }
         let factory = SQLiteKripkeStructureFactory(savingInDirectory: "/tmp/swiftfsm/\(readableName)")
         do {
-            try await verifier.verify(gateway: gateway, timer: clock, factory: factory).forEach {
+            try verifier.verify(gateway: gateway, timer: clock, factory: factory).forEach {
                 try viewFactory.make(identifier: $0.identifier).generate(store: $0, usingClocks: true)
             }
         } catch {
@@ -470,7 +445,7 @@ class SonarTests: XCTestCase {
         }
     }
     
-    func test_canGenerateCombinedSonarMachines() async {
+    func test_canGenerateCombinedSonarMachines() {
         let wbVars = [
             ("Sonar23", kwb_Arduino2Pin_v, kwb_Arduino3Pin_v, kwb_Arduino2PinValue_v),
             ("Sonar45", kwb_Arduino4Pin_v, kwb_Arduino5Pin_v, kwb_Arduino4PinValue_v),
@@ -538,7 +513,7 @@ class SonarTests: XCTestCase {
         let viewFactory = GraphVizKripkeStructureViewFactory()
         let factory = SQLiteKripkeStructureFactory(savingInDirectory: "/tmp/swiftfsm/\(readableName)")
         do {
-            try await verifier.verify(gateway: gateway, timer: clock, factory: factory).forEach {
+            try verifier.verify(gateway: gateway, timer: clock, factory: factory).forEach {
                 try viewFactory.make(identifier: $0.identifier).generate(store: $0, usingClocks: true)
             }
         } catch {

@@ -5,7 +5,6 @@ import PackageDescription
 
 let package = Package(
     name: "Sonar",
-    platforms: [.macOS(.v11)],
     products: [
         .library(name: "InitialOneMinuteMicrowave", targets: ["InitialOneMinuteMicrowave"]),
         .library(name: "TimerActuatorMicrowave", targets: ["TimerActuatorMicrowave"]),
