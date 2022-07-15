@@ -1,5 +1,4 @@
 import swiftfsm
-import SwiftfsmWBWrappers
 
 public final class SonarVars: Variables {
 

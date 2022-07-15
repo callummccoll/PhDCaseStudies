@@ -1,16 +1,16 @@
 import swiftfsm
-import SwiftfsmWBWrappers
+import SharedVariables
 
-public func make_Sonar(name: String = "Sonar", gateway: FSMGateway, clock: Timer, caller: FSM_ID, echoPin: wb_types, triggerPin: wb_types, echoPinValue: wb_types) -> (FSMType, [ShallowDependency]) {
+public func make_Sonar(name: String = "Sonar", gateway: FSMGateway, clock: Timer, caller: FSM_ID, echoPin: SonarPin, triggerPin: SonarPin, echoPinValue: SonarPin) -> (FSMType, [ShallowDependency]) {
     let (fsm, dependencies) = make_parameterised_Sonar(name: name, gateway: gateway, clock: clock, caller: caller, echoPin: echoPin, triggerPin: triggerPin, echoPinValue: echoPinValue)
     return (FSMType.parameterisedFSM(fsm), dependencies)
 }
 
-public func make_parameterised_Sonar(name machineName: String, gateway: FSMGateway, clock: Timer, caller: FSM_ID, echoPin: wb_types, triggerPin: wb_types, echoPinValue: wb_types) -> (AnyParameterisedFiniteStateMachine, [ShallowDependency]) {
+public func make_parameterised_Sonar(name machineName: String, gateway: FSMGateway, clock: Timer, caller: FSM_ID, echoPin: SonarPin, triggerPin: SonarPin, echoPinValue: SonarPin) -> (AnyParameterisedFiniteStateMachine, [ShallowDependency]) {
     // External Variables.
-    let external_echoPin: WhiteboardVariable<Bool> = WhiteboardVariable(msgType: echoPin, atomic: false)
-    let external_triggerPin: WhiteboardVariable<Bool> = WhiteboardVariable(msgType: triggerPin, atomic: false)
-    let external_echoPinValue: WhiteboardVariable<Bool> = WhiteboardVariable(msgType: echoPinValue, atomic: false)
+    let external_echoPin: InMemoryVariable<Bool> = InMemoryVariable(name: echoPin.rawValue, initialValue: false)
+    let external_triggerPin: InMemoryVariable<Bool> = InMemoryVariable(name: triggerPin.rawValue, initialValue: false)
+    let external_echoPinValue: InMemoryVariable<Bool> = InMemoryVariable(name: echoPinValue.rawValue, initialValue: false)
     // FSM Variables.
     let fsmVars = SimpleVariablesContainer(vars: SonarVars())
     // States.
@@ -84,15 +84,15 @@ public func make_parameterised_Sonar(name machineName: String, gateway: FSMGatew
             }
         }
 
-        var echoPin: wb_types {
+        var echoPin: SonarPin {
             parameters.echoPin
         }
 
-        var triggerPin: wb_types {
+        var triggerPin: SonarPin {
             parameters.triggerPin
         }
 
-        var echoPinValue: wb_types {
+        var echoPinValue: SonarPin {
             parameters.echoPinValue
         }
 
@@ -221,7 +221,7 @@ public func make_parameterised_Sonar(name machineName: String, gateway: FSMGatew
             }
         }
 
-        var echoPin: WhiteboardVariable<Bool>.Class {
+        var echoPin: Bool {
             get {
                 return Me.external_echoPin.val
             }
@@ -230,7 +230,7 @@ public func make_parameterised_Sonar(name machineName: String, gateway: FSMGatew
             }
         }
 
-        var triggerPin: WhiteboardVariable<Bool>.Class {
+        var triggerPin: Bool {
             get {
                 return Me.external_triggerPin.val
             }
@@ -312,13 +312,13 @@ public func make_parameterised_Sonar(name machineName: String, gateway: FSMGatew
             }
         }
 
-        var echoPinValue: WhiteboardVariable<Bool>.Class {
+        var echoPinValue: Bool {
             get {
                 return Me.external_echoPinValue.val
             }
         }
 
-        var triggerPin: WhiteboardVariable<Bool>.Class {
+        var triggerPin: Bool {
             get {
                 return Me.external_triggerPin.val
             }
@@ -619,13 +619,13 @@ public func make_parameterised_Sonar(name machineName: String, gateway: FSMGatew
             }
         }
 
-        var echoPinValue: WhiteboardVariable<Bool>.Class {
+        var echoPinValue: Bool {
             get {
                 return Me.external_echoPinValue.val
             }
         }
 
-        var triggerPin: WhiteboardVariable<Bool>.Class {
+        var triggerPin: Bool {
             get {
                 return Me.external_triggerPin.val
             }
@@ -707,13 +707,13 @@ public func make_parameterised_Sonar(name machineName: String, gateway: FSMGatew
             }
         }
 
-        var echoPinValue: WhiteboardVariable<Bool>.Class {
+        var echoPinValue: Bool {
             get {
                 return Me.external_echoPinValue.val
             }
         }
 
-        var triggerPin: WhiteboardVariable<Bool>.Class {
+        var triggerPin: Bool {
             get {
                 return Me.external_triggerPin.val
             }
@@ -795,7 +795,7 @@ public func make_parameterised_Sonar(name machineName: String, gateway: FSMGatew
             }
         }
 
-        var echoPinValue: WhiteboardVariable<Bool>.Class {
+        var echoPinValue: Bool {
             get {
                 return Me.external_echoPinValue.val
             }
@@ -874,7 +874,7 @@ public func make_parameterised_Sonar(name machineName: String, gateway: FSMGatew
             }
         }
 
-        var echoPinValue: WhiteboardVariable<Bool>.Class {
+        var echoPinValue: Bool {
             get {
                 return Me.external_echoPinValue.val
             }
@@ -912,9 +912,9 @@ public func make_parameterised_Sonar(name machineName: String, gateway: FSMGatew
     return (
         AnyParameterisedFiniteStateMachine(fsm) { parameters in
             guard
-                let echoPin = parameters["echoPin"] as? wb_types,
-                let triggerPin = parameters["triggerPin"] as? wb_types,
-                let echoPinValue = parameters["echoPinValue"] as? wb_types
+                let echoPin = parameters["echoPin"] as? SonarPin,
+                let triggerPin = parameters["triggerPin"] as? SonarPin,
+                let echoPinValue = parameters["echoPinValue"] as? SonarPin
             else {
                 fatalError("Unable to create new machine from parameters: \(parameters)")
             }

@@ -63,7 +63,7 @@ import Timers
 import KripkeStructure
 import KripkeStructureViews
 import swiftfsm
-import SwiftfsmWBWrappers
+import SharedVariables
 
 @testable import TimerActuatorMicrowave
 @testable import Verification
@@ -271,31 +271,32 @@ class TimerActuatorMicrowaveTests: XCTestCase {
         )
         let timer = AnyControllableFiniteStateMachine(TimerFiniteStateMachine(
             name: "Timer",
-            buttonPushed: WhiteboardVariable(msgType: kwb_buttonPushed_v),
-            doorOpen: WhiteboardVariable(msgType: kwb_doorOpen_v),
-            timeLeft: WhiteboardVariable(msgType: kwb_timeLeft_v),
+            buttonPushed: .buttonPushed,
+            doorOpen: .doorOpen,
+            timeLeft: .timeLeft,
             clock: clock
         ))
         let alarm = AnyControllableFiniteStateMachine(AlarmFiniteStateMachine(
             name: "Alarm",
-            buttonPushed: WhiteboardVariable(msgType: kwb_buttonPushed_v),
-            doorOpen: WhiteboardVariable(msgType: kwb_doorOpen_v),
-            timeLeft: WhiteboardVariable(msgType: kwb_timeLeft_v),
-            sound: WhiteboardVariable(msgType: kwb_sound_v), clock: clock
+            buttonPushed: .buttonPushed,
+            doorOpen: .doorOpen,
+            timeLeft: .timeLeft,
+            sound: .sound,
+            clock: clock
         ))
         let cooking = AnyControllableFiniteStateMachine(CookingFiniteStateMachine(
             name: "Cooking",
-            buttonPushed: WhiteboardVariable(msgType: kwb_buttonPushed_v),
-            doorOpen: WhiteboardVariable(msgType: kwb_doorOpen_v),
-            timeLeft: WhiteboardVariable(msgType: kwb_timeLeft_v),
-            motor: WhiteboardVariable(msgType: kwb_motor_v)
+            buttonPushed: .buttonPushed,
+            doorOpen: .doorOpen,
+            timeLeft: .timeLeft,
+            motor: .motor
         ))
         let light = AnyControllableFiniteStateMachine(LightFiniteStateMachine(
             name: "Light",
-            buttonPushed: WhiteboardVariable(msgType: kwb_buttonPushed_v),
-            doorOpen: WhiteboardVariable(msgType: kwb_doorOpen_v),
-            timeLeft: WhiteboardVariable(msgType: kwb_timeLeft_v),
-            light: WhiteboardVariable(msgType: kwb_light_v)
+            buttonPushed: .buttonPushed,
+            doorOpen: .doorOpen,
+            timeLeft: .timeLeft,
+            light: .light
         ))
         let machines: [FSMType] = [.controllableFSM(timer), .controllableFSM(alarm), .controllableFSM(cooking), .controllableFSM(light)]
         let threads: [IsolatedThread] = machines.enumerated().map { (index: Int, machine: FSMType) in
@@ -379,31 +380,32 @@ class TimerActuatorMicrowaveTests: XCTestCase {
         )
         let timer = AnyControllableFiniteStateMachine(TimerFiniteStateMachine(
             name: "Timer",
-            buttonPushed: WhiteboardVariable(msgType: kwb_buttonPushed_v),
-            doorOpen: WhiteboardVariable(msgType: kwb_doorOpen_v),
-            timeLeft: WhiteboardVariable(msgType: kwb_timeLeft_v),
+            buttonPushed: .buttonPushed,
+            doorOpen: .doorOpen,
+            timeLeft: .timeLeft,
             clock: clock
         ))
         let alarm = AnyControllableFiniteStateMachine(AlarmFiniteStateMachine(
             name: "Alarm",
-            buttonPushed: WhiteboardVariable(msgType: kwb_buttonPushed_v),
-            doorOpen: WhiteboardVariable(msgType: kwb_doorOpen_v),
-            timeLeft: WhiteboardVariable(msgType: kwb_timeLeft_v),
-            sound: WhiteboardVariable(msgType: kwb_sound_v), clock: clock
+            buttonPushed: .buttonPushed,
+            doorOpen: .doorOpen,
+            timeLeft: .timeLeft,
+            sound: .sound,
+            clock: clock
         ))
         let cooking = AnyControllableFiniteStateMachine(CookingFiniteStateMachine(
             name: "Cooking",
-            buttonPushed: WhiteboardVariable(msgType: kwb_buttonPushed_v),
-            doorOpen: WhiteboardVariable(msgType: kwb_doorOpen_v),
-            timeLeft: WhiteboardVariable(msgType: kwb_timeLeft_v),
-            motor: WhiteboardVariable(msgType: kwb_motor_v)
+            buttonPushed: .buttonPushed,
+            doorOpen: .doorOpen,
+            timeLeft: .timeLeft,
+            motor: .motor
         ))
         let light = AnyControllableFiniteStateMachine(LightFiniteStateMachine(
             name: "Light",
-            buttonPushed: WhiteboardVariable(msgType: kwb_buttonPushed_v),
-            doorOpen: WhiteboardVariable(msgType: kwb_doorOpen_v),
-            timeLeft: WhiteboardVariable(msgType: kwb_timeLeft_v),
-            light: WhiteboardVariable(msgType: kwb_light_v)
+            buttonPushed: .buttonPushed,
+            doorOpen: .doorOpen,
+            timeLeft: .timeLeft,
+            light: .light
         ))
         let machines: [FSMType] = [.controllableFSM(timer), .controllableFSM(alarm), .controllableFSM(cooking), .controllableFSM(light)]
         let steps: [VerificationMap.Step] = machines.enumerated().flatMap { (index: Int, machine: FSMType) -> [VerificationMap.Step] in

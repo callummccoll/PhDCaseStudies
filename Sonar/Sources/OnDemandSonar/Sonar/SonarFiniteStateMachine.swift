@@ -1,5 +1,5 @@
 import swiftfsm
-import SwiftfsmWBWrappers
+import SharedVariables
 
 public final class SonarFiniteStateMachine: ParameterisedMachineProtocol {
 
@@ -7,13 +7,13 @@ public final class SonarFiniteStateMachine: ParameterisedMachineProtocol {
 
         public final class Vars: Variables, ConvertibleFromDictionary, DictionaryConvertible {
 
-            var echoPin: wb_types
+            var echoPin: SonarPin
 
-            var triggerPin: wb_types
+            var triggerPin: SonarPin
 
-            var echoPinValue: wb_types
+            var echoPinValue: SonarPin
 
-            init(echoPin: wb_types, triggerPin: wb_types, echoPinValue: wb_types) {
+            init(echoPin: SonarPin, triggerPin: SonarPin, echoPinValue: SonarPin) {
                 self.echoPin = echoPin
                 self.triggerPin = triggerPin
                 self.echoPinValue = echoPinValue
@@ -21,9 +21,9 @@ public final class SonarFiniteStateMachine: ParameterisedMachineProtocol {
 
             public init(fromDictionary dict: [String: Any?]) {
                 guard
-                    let echoPin = dict["echoPin"] as? wb_types,
-                    let triggerPin = dict["triggerPin"] as? wb_types,
-                    let echoPinValue = dict["echoPinValue"] as? wb_types
+                    let echoPin = dict["echoPin"] as? SonarPin,
+                    let triggerPin = dict["triggerPin"] as? SonarPin,
+                    let echoPinValue = dict["echoPinValue"] as? SonarPin
                 else {
                     fatalError("Unable to create Parameters from dictionary: \(dict)")
                 }
@@ -34,9 +34,9 @@ public final class SonarFiniteStateMachine: ParameterisedMachineProtocol {
 
             public init?(_ dictionary: [String: String]) {
                 guard
-                    let echoPin = dictionary["echoPin"].flatMap({ UInt32($0).map { wb_types($0) } }),
-                    let triggerPin = dictionary["triggerPin"].flatMap({ UInt32($0).map { wb_types($0) } }),
-                    let echoPinValue = dictionary["echoPinValue"].flatMap({ UInt32($0).map { wb_types($0) } })
+                    let echoPin = dictionary["echoPin"].flatMap(SonarPin.init),
+                    let triggerPin = dictionary["triggerPin"].flatMap(SonarPin.init),
+                    let echoPinValue = dictionary["echoPinValue"].flatMap(SonarPin.init)
                 else {
                     return nil
                 }
@@ -151,7 +151,7 @@ public final class SonarFiniteStateMachine: ParameterisedMachineProtocol {
             for external in newValue {
                 switch external.name {
                 case self.external_echoPinValue.name:
-                    self.external_echoPinValue.val = external.val as! WhiteboardVariable<Bool>.Class
+                    self.external_echoPinValue.val = external.val as! Bool
                 default:
                     continue
                 }
@@ -166,9 +166,9 @@ public final class SonarFiniteStateMachine: ParameterisedMachineProtocol {
             for external in newValue {
                 switch external.name {
                 case self.external_echoPin.name:
-                    self.external_echoPin.val = external.val as! WhiteboardVariable<Bool>.Class
+                    self.external_echoPin.val = external.val as! Bool
                 case self.external_triggerPin.name:
-                    self.external_triggerPin.val = external.val as! WhiteboardVariable<Bool>.Class
+                    self.external_triggerPin.val = external.val as! Bool
                 default:
                     continue
                 }
@@ -294,18 +294,18 @@ public final class SonarFiniteStateMachine: ParameterisedMachineProtocol {
      */
     public private(set) var suspendState: SonarState
 
-    public var external_echoPin: WhiteboardVariable<Bool>
+    public var external_echoPin: InMemoryVariable<Bool>
 
-    public var external_triggerPin: WhiteboardVariable<Bool>
+    public var external_triggerPin: InMemoryVariable<Bool>
 
-    public var external_echoPinValue: WhiteboardVariable<Bool>
+    public var external_echoPinValue: InMemoryVariable<Bool>
 
     internal init(
         name: String,
         initialState: SonarState,
-        external_echoPin: WhiteboardVariable<Bool>,
-        external_triggerPin: WhiteboardVariable<Bool>,
-        external_echoPinValue: WhiteboardVariable<Bool>,
+        external_echoPin: InMemoryVariable<Bool>,
+        external_triggerPin: InMemoryVariable<Bool>,
+        external_echoPinValue: InMemoryVariable<Bool>,
         fsmVars: SimpleVariablesContainer<SonarVars>,
         ringlet: SonarRinglet,
         initialPreviousState: SonarState,
@@ -317,9 +317,9 @@ public final class SonarFiniteStateMachine: ParameterisedMachineProtocol {
         self.currentState = initialState
         self.parameters = Parameters(
             vars: Parameters.Vars(
-                echoPin: wb_types(UInt32(external_echoPin.wb.msgTypeOffset)),
-                triggerPin: wb_types(UInt32(external_triggerPin.wb.msgTypeOffset)),
-                echoPinValue: wb_types(UInt32(external_echoPinValue.wb.msgTypeOffset))
+                echoPin: SonarPin(rawValue: external_echoPin.rawName)!,
+                triggerPin: SonarPin(rawValue: external_triggerPin.rawName)!,
+                echoPinValue: SonarPin(rawValue: external_echoPinValue.rawName)!
             )
         )
         self.results = Results(vars: Results.Vars(result: nil))

@@ -1,5 +1,5 @@
 import swiftfsm
-import SwiftfsmWBWrappers
+import SharedVariables
 
 internal final class SonarFiniteStateMachine: MachineProtocol {
 
@@ -62,7 +62,7 @@ internal final class SonarFiniteStateMachine: MachineProtocol {
             for external in newValue {
                 switch external.name {
                 case self.external_echoPinValue.name:
-                    self.external_echoPinValue.val = external.val as! WhiteboardVariable<Bool>.Class
+                    self.external_echoPinValue.val = external.val as! Bool
                 default:
                     continue
                 }
@@ -77,9 +77,9 @@ internal final class SonarFiniteStateMachine: MachineProtocol {
             for external in newValue {
                 switch external.name {
                 case self.external_echoPin.name:
-                    self.external_echoPin.val = external.val as! WhiteboardVariable<Bool>.Class
+                    self.external_echoPin.val = external.val as! Bool
                 case self.external_triggerPin.name:
-                    self.external_triggerPin.val = external.val as! WhiteboardVariable<Bool>.Class
+                    self.external_triggerPin.val = external.val as! Bool
                 default:
                     continue
                 }
@@ -205,18 +205,18 @@ internal final class SonarFiniteStateMachine: MachineProtocol {
      */
     public private(set) var suspendState: SonarState
 
-    public var external_echoPin: WhiteboardVariable<Bool>
+    public var external_echoPin: InMemoryVariable<Bool>
 
-    public var external_triggerPin: WhiteboardVariable<Bool>
+    public var external_triggerPin: InMemoryVariable<Bool>
 
-    public var external_echoPinValue: WhiteboardVariable<Bool>
+    public var external_echoPinValue: InMemoryVariable<Bool>
 
     internal init(
         name: String,
         initialState: SonarState,
-        external_echoPin: WhiteboardVariable<Bool>,
-        external_triggerPin: WhiteboardVariable<Bool>,
-        external_echoPinValue: WhiteboardVariable<Bool>,
+        external_echoPin: InMemoryVariable<Bool>,
+        external_triggerPin: InMemoryVariable<Bool>,
+        external_echoPinValue: InMemoryVariable<Bool>,
         fsmVars: SimpleVariablesContainer<SonarVars>,
         ringlet: SonarRinglet,
         initialPreviousState: SonarState,

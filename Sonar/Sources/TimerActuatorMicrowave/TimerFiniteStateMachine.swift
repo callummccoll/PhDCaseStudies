@@ -4,7 +4,7 @@ import Gateways
 import Timers
 import Verification
 import swiftfsm
-import SwiftfsmWBWrappers
+import SharedVariables
 
 final class TimerFiniteStateMachine: MachineProtocol, CustomStringConvertible {
 
@@ -62,11 +62,11 @@ final class TimerFiniteStateMachine: MachineProtocol, CustomStringConvertible {
 
     var clock: Timer
 
-    var buttonPushed: WhiteboardVariable<Bool>
+    var buttonPushed: InMemoryVariable<Bool>
 
-    var doorOpen: WhiteboardVariable<Bool>
+    var doorOpen: InMemoryVariable<Bool>
 
-    var timeLeft: WhiteboardVariable<Bool>
+    var timeLeft: InMemoryVariable<Bool>
 
     var sensors: [AnySnapshotController] {
         get {
@@ -172,7 +172,7 @@ final class TimerFiniteStateMachine: MachineProtocol, CustomStringConvertible {
         return fsm
     }
 
-    init(name: String, buttonPushed: WhiteboardVariable<Bool>, doorOpen: WhiteboardVariable<Bool>, timeLeft: WhiteboardVariable<Bool>, clock: Timer) {
+    init(name: String, buttonPushed: InMemoryVariable<Bool>, doorOpen: InMemoryVariable<Bool>, timeLeft: InMemoryVariable<Bool>, clock: Timer) {
         self.name = name
         self.buttonPushed = buttonPushed
         self.doorOpen = doorOpen

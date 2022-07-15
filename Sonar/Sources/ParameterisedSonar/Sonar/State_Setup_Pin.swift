@@ -1,5 +1,5 @@
 import swiftfsm
-import SwiftfsmWBWrappers
+import SharedVariables
 
 public final class State_Setup_Pin: SonarState {
 
@@ -87,7 +87,7 @@ public final class State_Setup_Pin: SonarState {
         }
     }
 
-    public internal(set) var echoPin: WhiteboardVariable<Bool>.Class {
+    public internal(set) var echoPin: Bool {
         get {
             return Me.external_echoPin.val
         }
@@ -96,7 +96,7 @@ public final class State_Setup_Pin: SonarState {
         }
     }
 
-    public internal(set) var triggerPin: WhiteboardVariable<Bool>.Class {
+    public internal(set) var triggerPin: Bool {
         get {
             return Me.external_triggerPin.val
         }

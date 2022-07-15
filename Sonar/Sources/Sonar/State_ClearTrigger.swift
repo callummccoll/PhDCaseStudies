@@ -1,5 +1,4 @@
 import swiftfsm
-import SwiftfsmWBWrappers
 
 public final class State_ClearTrigger: SonarState {
 
@@ -79,13 +78,13 @@ public final class State_ClearTrigger: SonarState {
         }
     }
 
-    public var echoPinValue: WhiteboardVariable<Bool>.Class {
+    public var echoPinValue: Bool {
         get {
             return Me.external_echoPinValue.val
         }
     }
 
-    public internal(set) var triggerPin: WhiteboardVariable<Bool>.Class {
+    public internal(set) var triggerPin: Bool {
         get {
             return Me.external_triggerPin.val
         }

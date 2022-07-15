@@ -1,5 +1,5 @@
 import swiftfsm
-import SwiftfsmWBWrappers
+import SharedVariables
 
 public final class CallerState_Initial: CallerState {
 
@@ -51,17 +51,17 @@ public final class CallerState_Initial: CallerState {
 
     public var promise45: Promise<UInt16>!
 
-    let _Sonar23: (wb_types, wb_types, wb_types) -> Promise<UInt16>
+    let _Sonar23: (SonarPin, SonarPin, SonarPin) -> Promise<UInt16>
 
-    let _Sonar45: (wb_types, wb_types, wb_types) -> Promise<UInt16>
+    let _Sonar45: (SonarPin, SonarPin, SonarPin) -> Promise<UInt16>
 
     public init(
         _ name: String,
         transitions: [Transition<CallerState_Initial, CallerState>] = [],
         gateway: FSMGateway,
         clock: Timer,
-        Sonar23: @escaping (wb_types, wb_types, wb_types) -> Promise<UInt16>,
-        Sonar45: @escaping (wb_types, wb_types, wb_types) -> Promise<UInt16>
+        Sonar23: @escaping (SonarPin, SonarPin, SonarPin) -> Promise<UInt16>,
+        Sonar45: @escaping (SonarPin, SonarPin, SonarPin) -> Promise<UInt16>
     ) {
         self.gateway = gateway
         self.clock = clock
@@ -71,8 +71,8 @@ public final class CallerState_Initial: CallerState {
     }
 
     public override func onEntry() {
-        promise23 = Sonar23(echoPin: kwb_Arduino2Pin_v, triggerPin: kwb_Arduino3Pin_v, echoPinValue: kwb_Arduino2PinValue_v)
-        promise45 = Sonar45(echoPin: kwb_Arduino4Pin_v, triggerPin: kwb_Arduino5Pin_v, echoPinValue: kwb_Arduino4PinValue_v)
+        promise23 = Sonar23(echoPin: .pin2Control, triggerPin: .pin3Control, echoPinValue: .pin2Status)
+        promise45 = Sonar45(echoPin: .pin4Control, triggerPin: .pin5Control, echoPinValue: .pin6Status)
     }
 
     public override func onExit() {
@@ -84,11 +84,11 @@ public final class CallerState_Initial: CallerState {
 
     public override func main() {}
 
-    func Sonar23(echoPin: wb_types, triggerPin: wb_types, echoPinValue: wb_types) -> Promise<UInt16> {
+    func Sonar23(echoPin: SonarPin, triggerPin: SonarPin, echoPinValue: SonarPin) -> Promise<UInt16> {
         self._Sonar23(echoPin, triggerPin, echoPinValue)
     }
 
-    func Sonar45(echoPin: wb_types, triggerPin: wb_types, echoPinValue: wb_types) -> Promise<UInt16> {
+    func Sonar45(echoPin: SonarPin, triggerPin: SonarPin, echoPinValue: SonarPin) -> Promise<UInt16> {
         self._Sonar45(echoPin, triggerPin, echoPinValue)
     }
 

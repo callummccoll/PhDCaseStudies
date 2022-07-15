@@ -4,7 +4,7 @@ import Gateways
 import Timers
 import Verification
 import swiftfsm
-import SwiftfsmWBWrappers
+import SharedVariables
 
 final class AlarmFiniteStateMachine: MachineProtocol, CustomStringConvertible {
 
@@ -55,9 +55,9 @@ final class AlarmFiniteStateMachine: MachineProtocol, CustomStringConvertible {
 
     var clock: Timer
 
-    var status = WhiteboardVariable<MicrowaveStatus>(msgType: kwb_MicrowaveStatus_v)
+    var status: InMemoryVariable<MicrowaveStatus>
 
-    var sound = WhiteboardVariable<Bool>(msgType: kwb_sound_v)
+    var sound: InMemoryVariable<Bool>
 
     var sensors: [AnySnapshotController] = []
 
@@ -153,7 +153,7 @@ final class AlarmFiniteStateMachine: MachineProtocol, CustomStringConvertible {
         return fsm
     }
 
-    init(name: String, status: WhiteboardVariable<MicrowaveStatus>, sound: WhiteboardVariable<Bool>, clock: Timer) {
+    init(name: String, status: InMemoryVariable<MicrowaveStatus>, sound: InMemoryVariable<Bool>, clock: Timer) {
         self.name = name
         self.status = status
         self.sound = sound

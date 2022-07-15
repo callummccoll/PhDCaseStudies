@@ -5,7 +5,7 @@ import Gateways
 import Timers
 import Verification
 import swiftfsm
-import SwiftfsmWBWrappers
+import SharedVariables
 
 final class LightFiniteStateMachine: MachineProtocol, CustomStringConvertible {
 
@@ -52,9 +52,9 @@ final class LightFiniteStateMachine: MachineProtocol, CustomStringConvertible {
         ]
     }
 
-    var status = WhiteboardVariable<MicrowaveStatus>(msgType: kwb_MicrowaveStatus_v)
+    var status: InMemoryVariable<MicrowaveStatus>
 
-    var light = WhiteboardVariable<Bool>(msgType: kwb_light_v)
+    var light: InMemoryVariable<Bool>
 
     var sensors: [AnySnapshotController] = []
 
@@ -135,7 +135,7 @@ final class LightFiniteStateMachine: MachineProtocol, CustomStringConvertible {
         return fsm
     }
 
-    init(name: String, status: WhiteboardVariable<MicrowaveStatus>, light: WhiteboardVariable<Bool>) {
+    init(name: String, status: InMemoryVariable<MicrowaveStatus>, light: InMemoryVariable<Bool>) {
         self.name = name
         self.status = status
         self.light = light

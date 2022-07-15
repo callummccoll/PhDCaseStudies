@@ -1,5 +1,5 @@
+import Foundation
 import swiftfsm
-import SwiftfsmWBWrappers
 
 public final class State_Initial: SonarState {
 
@@ -17,7 +17,7 @@ public final class State_Initial: SonarState {
 
     fileprivate let gateway: FSMGateway
 
-    public let clock: Timer
+    public let clock: swiftfsm.Timer
 
     public internal(set) var fsmVars: SonarVars {
         get {
@@ -82,8 +82,8 @@ public final class State_Initial: SonarState {
     public init(
         _ name: String,
         transitions: [Transition<State_Initial, SonarState>] = [],
-        gateway: FSMGateway
-,        clock: Timer
+        gateway: FSMGateway,
+        clock: swiftfsm.Timer
     ) {
         self.gateway = gateway
         self.clock = clock

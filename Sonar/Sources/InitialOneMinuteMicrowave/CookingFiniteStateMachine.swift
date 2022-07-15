@@ -62,7 +62,7 @@ import Gateways
 import Timers
 import Verification
 import swiftfsm
-import SwiftfsmWBWrappers
+import SharedVariables
 
 final class CookingFiniteStateMachine: MachineProtocol, CustomStringConvertible {
 
@@ -109,9 +109,9 @@ final class CookingFiniteStateMachine: MachineProtocol, CustomStringConvertible 
         ]
     }
 
-    var status = WhiteboardVariable<MicrowaveStatus>(msgType: kwb_MicrowaveStatus_v)
+    var status: InMemoryVariable<MicrowaveStatus>
 
-    var motor = WhiteboardVariable<Bool>(msgType: kwb_motor_v)
+    var motor: InMemoryVariable<Bool>
 
     var sensors: [AnySnapshotController] = []
 
@@ -192,7 +192,7 @@ final class CookingFiniteStateMachine: MachineProtocol, CustomStringConvertible 
         return fsm
     }
 
-    init(name: String, status: WhiteboardVariable<MicrowaveStatus>, motor: WhiteboardVariable<Bool>) {
+    init(name: String, status: InMemoryVariable<MicrowaveStatus>, motor: InMemoryVariable<Bool>) {
         self.name = name
         self.status = status
         self.motor = motor

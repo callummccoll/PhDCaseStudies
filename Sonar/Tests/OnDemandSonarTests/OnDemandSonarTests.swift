@@ -63,7 +63,7 @@ import Timers
 import KripkeStructure
 import KripkeStructureViews
 import swiftfsm
-import SwiftfsmWBWrappers
+import SharedVariables
 
 @testable import OnDemandSonar
 @testable import Verification
@@ -257,8 +257,28 @@ class OnDemandSonarTests: XCTestCase {
         self.name.dropFirst(2).dropLast().components(separatedBy: .whitespacesAndNewlines).joined(separator: "_")
     }
 
+    var originalPath: String!
+
+    var testFolder: URL!
+
+    override func setUpWithError() throws {
+        let fm = FileManager.default
+        originalPath = fm.currentDirectoryPath
+        let filePath = URL(fileURLWithPath: #filePath, isDirectory: false)
+        testFolder = filePath
+            .deletingLastPathComponent()
+            .deletingLastPathComponent()
+            .deletingLastPathComponent()
+            .appendingPathComponent("kripke_structures", isDirectory: true)
+            .appendingPathComponent(readableName, isDirectory: true)
+        _ = try? fm.removeItem(atPath: testFolder.path)
+        try fm.createDirectory(at: testFolder, withIntermediateDirectories: true)
+        fm.changeCurrentDirectoryPath(testFolder.path)
+    }
+
     override func tearDownWithError() throws {
-        // Put teardown code here. This method is called after the invocation of each test method in the class.
+        let fm = FileManager.default
+        fm.changeCurrentDirectoryPath(originalPath)
     }
     
     func test_canGenerateTwoSonarMachines() async {
@@ -274,8 +294,8 @@ class OnDemandSonarTests: XCTestCase {
         )
         let caller = make_Caller(gateway: gateway, clock: clock).0
         let callerID = gateway.id(of: caller.name)
-        let sonar23 = make_Sonar(name: "Sonar1", gateway: gateway, clock: clock, caller: callerID, echoPin: kwb_Arduino2Pin_v, triggerPin: kwb_Arduino3Pin_v, echoPinValue: kwb_Arduino2PinValue_v).0
-        let sonar45 = make_Sonar(name: "Sonar2", gateway: gateway, clock: clock, caller: callerID, echoPin: kwb_Arduino4Pin_v, triggerPin: kwb_Arduino5Pin_v, echoPinValue: kwb_Arduino4PinValue_v).0
+        let sonar23 = make_Sonar(name: "Sonar1", gateway: gateway, clock: clock, caller: callerID, echoPin: .pin2Control, triggerPin: .pin3Control, echoPinValue: .pin2Status).0
+        let sonar45 = make_Sonar(name: "Sonar2", gateway: gateway, clock: clock, caller: callerID, echoPin: .pin4Control, triggerPin: .pin5Control, echoPinValue: .pin4Status).0
         let callerTimeslot = Timeslot(
             fsms: [caller.name],
             callChain: CallChain(root: caller.name, calls: []),
@@ -376,7 +396,7 @@ class OnDemandSonarTests: XCTestCase {
                 return TestableView(identifier: name, expectedIdentifier: "", expected: [])
             }
         }
-        let factory = SQLiteKripkeStructureFactory(savingInDirectory: "/tmp/swiftfsm/\(readableName)")
+        let factory = SQLiteKripkeStructureFactory(savingInDirectory: testFolder.name)
         do {
             try verifier.verify(gateway: gateway, timer: clock, factory: factory).forEach {
                 try viewFactory.make(identifier: $0.identifier).generate(store: $0, usingClocks: true)

@@ -4,7 +4,7 @@ import Gateways
 import Timers
 import Verification
 import swiftfsm
-import SwiftfsmWBWrappers
+import SharedVariables
 
 final class TimerFiniteStateMachine: MachineProtocol, CustomStringConvertible {
 
@@ -57,7 +57,7 @@ final class TimerFiniteStateMachine: MachineProtocol, CustomStringConvertible {
 
     var clock: Timer
 
-    var status = WhiteboardVariable<MicrowaveStatus>(msgType: kwb_MicrowaveStatus_v)
+    var status: InMemoryVariable<MicrowaveStatus>
 
     var sensors: [AnySnapshotController] = []
 
@@ -154,7 +154,7 @@ final class TimerFiniteStateMachine: MachineProtocol, CustomStringConvertible {
         return fsm
     }
 
-    init(name: String, status: WhiteboardVariable<MicrowaveStatus>, clock: Timer) {
+    init(name: String, status: InMemoryVariable<MicrowaveStatus>, clock: Timer) {
         self.name = name
         self.status = status
         self.clock = clock

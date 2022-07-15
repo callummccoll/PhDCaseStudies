@@ -63,7 +63,7 @@ import Timers
 import KripkeStructure
 import KripkeStructureViews
 import swiftfsm
-import SwiftfsmWBWrappers
+import SharedVariables
 
 @testable import Sonar
 @testable import Verification
@@ -257,15 +257,35 @@ class SonarTests: XCTestCase {
         self.name.dropFirst(2).dropLast().components(separatedBy: .whitespacesAndNewlines).joined(separator: "_")
     }
 
+    var originalPath: String!
+
+    var testFolder: URL!
+
+    override func setUpWithError() throws {
+        let fm = FileManager.default
+        originalPath = fm.currentDirectoryPath
+        let filePath = URL(fileURLWithPath: #filePath, isDirectory: false)
+        testFolder = filePath
+            .deletingLastPathComponent()
+            .deletingLastPathComponent()
+            .deletingLastPathComponent()
+            .appendingPathComponent("kripke_structures", isDirectory: true)
+            .appendingPathComponent(readableName, isDirectory: true)
+        _ = try? fm.removeItem(atPath: testFolder.path)
+        try fm.createDirectory(at: testFolder, withIntermediateDirectories: true)
+        fm.changeCurrentDirectoryPath(testFolder.path)
+    }
+
     override func tearDownWithError() throws {
-        // Put teardown code here. This method is called after the invocation of each test method in the class.
+        let fm = FileManager.default
+        fm.changeCurrentDirectoryPath(originalPath)
     }
     
     func test_canGenerateParallelSonarMachines() {
-        let wbVars = [
-            ("Sonar23", kwb_Arduino2Pin_v, kwb_Arduino3Pin_v, kwb_Arduino2PinValue_v),
-            ("Sonar45", kwb_Arduino4Pin_v, kwb_Arduino5Pin_v, kwb_Arduino4PinValue_v),
-            ("Sonar67", kwb_Arduino6Pin_v, kwb_Arduino7Pin_v, kwb_Arduino6PinValue_v)
+        let wbVars: [(String, SonarPin, SonarPin, SonarPin)] = [
+            ("Sonar23", .pin2Control, .pin3Control, .pin2Status),
+            ("Sonar45", .pin4Control, .pin5Control, .pin4Status),
+            ("Sonar67", .pin6Control, .pin7Control, .pin6Status)
         ]
         let gateway = StackGateway()
         let timeslotLength: UInt = 244
@@ -335,7 +355,7 @@ class SonarTests: XCTestCase {
             }
             return TestableView(identifier: name, expectedIdentifier: name, expected: [])
         }
-        let factory = SQLiteKripkeStructureFactory(savingInDirectory: "/tmp/swiftfsm/\(readableName)")
+        let factory = SQLiteKripkeStructureFactory(savingInDirectory: testFolder.path)
         do {
             try verifier.verify(gateway: gateway, timer: clock, factory: factory).forEach {
                 try viewFactory.make(identifier: $0.identifier).generate(store: $0, usingClocks: true)
@@ -354,10 +374,10 @@ class SonarTests: XCTestCase {
     }
     
     func test_canGenerateSonarMachines() {
-        let wbVars = [
-            ("Sonar23", kwb_Arduino2Pin_v, kwb_Arduino3Pin_v, kwb_Arduino2PinValue_v),
-            ("Sonar45", kwb_Arduino4Pin_v, kwb_Arduino5Pin_v, kwb_Arduino4PinValue_v),
-            ("Sonar67", kwb_Arduino6Pin_v, kwb_Arduino7Pin_v, kwb_Arduino6PinValue_v)
+        let wbVars: [(String, SonarPin, SonarPin, SonarPin)] = [
+            ("Sonar23", .pin2Control, .pin3Control, .pin2Status),
+            ("Sonar45", .pin4Control, .pin5Control, .pin4Status),
+            ("Sonar67", .pin6Control, .pin7Control, .pin6Status)
         ]
         let gateway = StackGateway()
         let timeslotLength: UInt = 244
@@ -427,7 +447,7 @@ class SonarTests: XCTestCase {
             }
             return TestableView(identifier: name, expectedIdentifier: name, expected: [])
         }
-        let factory = SQLiteKripkeStructureFactory(savingInDirectory: "/tmp/swiftfsm/\(readableName)")
+        let factory = SQLiteKripkeStructureFactory(savingInDirectory: testFolder.path)
         do {
             try verifier.verify(gateway: gateway, timer: clock, factory: factory).forEach {
                 try viewFactory.make(identifier: $0.identifier).generate(store: $0, usingClocks: true)
@@ -446,10 +466,10 @@ class SonarTests: XCTestCase {
     }
     
     func test_canGenerateCombinedSonarMachines() {
-        let wbVars = [
-            ("Sonar23", kwb_Arduino2Pin_v, kwb_Arduino3Pin_v, kwb_Arduino2PinValue_v),
-            ("Sonar45", kwb_Arduino4Pin_v, kwb_Arduino5Pin_v, kwb_Arduino4PinValue_v),
-            ("Sonar67", kwb_Arduino6Pin_v, kwb_Arduino7Pin_v, kwb_Arduino6PinValue_v)
+        let wbVars: [(String, SonarPin, SonarPin, SonarPin)] = [
+            ("Sonar23", .pin2Control, .pin3Control, .pin2Status),
+            ("Sonar45", .pin4Control, .pin5Control, .pin4Status),
+            ("Sonar67", .pin6Control, .pin7Control, .pin6Status)
         ]
         let gateway = StackGateway()
         let timeslotLength: UInt = 244
@@ -511,7 +531,7 @@ class SonarTests: XCTestCase {
             )
         )
         let viewFactory = GraphVizKripkeStructureViewFactory()
-        let factory = SQLiteKripkeStructureFactory(savingInDirectory: "/tmp/swiftfsm/\(readableName)")
+        let factory = SQLiteKripkeStructureFactory(savingInDirectory: testFolder.path)
         do {
             try verifier.verify(gateway: gateway, timer: clock, factory: factory).forEach {
                 try viewFactory.make(identifier: $0.identifier).generate(store: $0, usingClocks: true)

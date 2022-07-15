@@ -1,5 +1,4 @@
 import swiftfsm
-import SwiftfsmWBWrappers
 
 public final class State_WaitForPulseEnd: SonarState {
 
@@ -87,7 +86,7 @@ public final class State_WaitForPulseEnd: SonarState {
         }
     }
 
-    public var echoPinValue: WhiteboardVariable<Bool>.Class {
+    public var echoPinValue: Bool {
         get {
             return Me.external_echoPinValue.val
         }

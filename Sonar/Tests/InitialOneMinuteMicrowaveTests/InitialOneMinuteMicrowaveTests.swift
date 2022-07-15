@@ -63,7 +63,7 @@ import Timers
 import KripkeStructure
 import KripkeStructureViews
 import swiftfsm
-import SwiftfsmWBWrappers
+import SharedVariables
 
 @testable import InitialOneMinuteMicrowave
 @testable import Verification
@@ -257,8 +257,28 @@ class InitialOneMinuteMicrowaveTests: XCTestCase {
         self.name.dropFirst(2).dropLast().components(separatedBy: .whitespacesAndNewlines).joined(separator: "_")
     }
 
+    var originalPath: String!
+
+    var testFolder: URL!
+
+    override func setUpWithError() throws {
+        let fm = FileManager.default
+        originalPath = fm.currentDirectoryPath
+        let filePath = URL(fileURLWithPath: #filePath, isDirectory: false)
+        testFolder = filePath
+            .deletingLastPathComponent()
+            .deletingLastPathComponent()
+            .deletingLastPathComponent()
+            .appendingPathComponent("kripke_structures", isDirectory: true)
+            .appendingPathComponent(readableName, isDirectory: true)
+        _ = try? fm.removeItem(atPath: testFolder.path)
+        try fm.createDirectory(at: testFolder, withIntermediateDirectories: true)
+        fm.changeCurrentDirectoryPath(testFolder.path)
+    }
+
     override func tearDownWithError() throws {
-        // Put teardown code here. This method is called after the invocation of each test method in the class.
+        let fm = FileManager.default
+        fm.changeCurrentDirectoryPath(originalPath)
     }
 
     func test_canGenerateSeparateMicrowaveMachines() {
@@ -269,10 +289,10 @@ class InitialOneMinuteMicrowaveTests: XCTestCase {
             ringletLengths: ["Timer": 30, "Alarm": 30, "Cooking": 30, "Light": 30],
             scheduleLength: gap * 4 + timeslotLength * 4
         )
-        let timer = AnyControllableFiniteStateMachine(TimerFiniteStateMachine(name: "Timer", status: WhiteboardVariable(msgType: kwb_MicrowaveStatus_v), clock: clock))
-        let alarm = AnyControllableFiniteStateMachine(AlarmFiniteStateMachine(name: "Alarm", status: WhiteboardVariable(msgType: kwb_MicrowaveStatus_v), sound: WhiteboardVariable(msgType: kwb_sound_v), clock: clock))
-        let cooking = AnyControllableFiniteStateMachine(CookingFiniteStateMachine(name: "Cooking", status: WhiteboardVariable(msgType: kwb_MicrowaveStatus_v), motor: WhiteboardVariable(msgType: kwb_motor_v)))
-        let light = AnyControllableFiniteStateMachine(LightFiniteStateMachine(name: "Light", status: WhiteboardVariable(msgType: kwb_MicrowaveStatus_v), light: WhiteboardVariable(msgType: kwb_light_v)))
+        let timer = AnyControllableFiniteStateMachine(TimerFiniteStateMachine(name: "Timer", status: .status, clock: clock))
+        let alarm = AnyControllableFiniteStateMachine(AlarmFiniteStateMachine(name: "Alarm", status: .status, sound: .sound, clock: clock))
+        let cooking = AnyControllableFiniteStateMachine(CookingFiniteStateMachine(name: "Cooking", status: .status, motor: .motor))
+        let light = AnyControllableFiniteStateMachine(LightFiniteStateMachine(name: "Light", status: .status, light: .light))
         let machines: [FSMType] = [.controllableFSM(timer), .controllableFSM(alarm), .controllableFSM(cooking), .controllableFSM(light)]
         let threads: [IsolatedThread] = machines.enumerated().map { (index: Int, machine: FSMType) in
             IsolatedThread(
@@ -324,7 +344,7 @@ class InitialOneMinuteMicrowaveTests: XCTestCase {
             }
             return TestableView(identifier: name, expectedIdentifier: name, expected: [])
         }
-        let factory = SQLiteKripkeStructureFactory(savingInDirectory: "/tmp/swiftfsm/\(readableName)")
+        let factory = SQLiteKripkeStructureFactory(savingInDirectory: testFolder.path)
         do {
             try verifier.verify(gateway: gateway, timer: clock, factory: factory).forEach {
                 try viewFactory.make(identifier: $0.identifier).generate(store: $0, usingClocks: true)
@@ -353,10 +373,10 @@ class InitialOneMinuteMicrowaveTests: XCTestCase {
             ringletLengths: ["Timer": 30, "Alarm": 30, "Cooking": 30, "Light": 30],
             scheduleLength: gap * 4 + timeslotLength * 4
         )
-        let timer = AnyControllableFiniteStateMachine(TimerFiniteStateMachine(name: "Timer", status: WhiteboardVariable(msgType: kwb_MicrowaveStatus_v), clock: clock))
-        let alarm = AnyControllableFiniteStateMachine(AlarmFiniteStateMachine(name: "Alarm", status: WhiteboardVariable(msgType: kwb_MicrowaveStatus_v), sound: WhiteboardVariable(msgType: kwb_sound_v), clock: clock))
-        let cooking = AnyControllableFiniteStateMachine(CookingFiniteStateMachine(name: "Cooking", status: WhiteboardVariable(msgType: kwb_MicrowaveStatus_v), motor: WhiteboardVariable(msgType: kwb_motor_v)))
-        let light = AnyControllableFiniteStateMachine(LightFiniteStateMachine(name: "Light", status: WhiteboardVariable(msgType: kwb_MicrowaveStatus_v), light: WhiteboardVariable(msgType: kwb_light_v)))
+        let timer = AnyControllableFiniteStateMachine(TimerFiniteStateMachine(name: "Timer", status: .status, clock: clock))
+        let alarm = AnyControllableFiniteStateMachine(AlarmFiniteStateMachine(name: "Alarm", status: .status, sound: .sound, clock: clock))
+        let cooking = AnyControllableFiniteStateMachine(CookingFiniteStateMachine(name: "Cooking", status: .status, motor: .motor))
+        let light = AnyControllableFiniteStateMachine(LightFiniteStateMachine(name: "Light", status: .status, light: .light))
         let machines: [FSMType] = [.controllableFSM(timer), .controllableFSM(alarm), .controllableFSM(cooking), .controllableFSM(light)]
         let steps: [VerificationMap.Step] = machines.enumerated().flatMap { (index: Int, machine: FSMType) -> [VerificationMap.Step] in
             [
@@ -405,7 +425,7 @@ class InitialOneMinuteMicrowaveTests: XCTestCase {
             )
         )
         let viewFactory = GraphVizKripkeStructureViewFactory()
-        let factory = SQLiteKripkeStructureFactory(savingInDirectory: "/tmp/swiftfsm/\(readableName)")
+        let factory = SQLiteKripkeStructureFactory(savingInDirectory: testFolder.name)
         do {
             try verifier.verify(gateway: gateway, timer: clock, factory: factory).forEach {
                 try viewFactory.make(identifier: $0.identifier).generate(store: $0, usingClocks: true)

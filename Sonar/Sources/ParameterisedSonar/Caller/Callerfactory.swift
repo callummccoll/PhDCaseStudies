@@ -1,5 +1,4 @@
 import swiftfsm
-import SwiftfsmWBWrappers
 
 public func make_Caller(name: String = "Caller", gateway: FSMGateway, clock: Timer) -> (FSMType, [ShallowDependency]) {
     let (fsm, dependencies) = make_submachine_Caller(name: name, gateway: gateway, clock: clock)

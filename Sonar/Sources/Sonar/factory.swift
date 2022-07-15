@@ -1,16 +1,16 @@
 import swiftfsm
-import SwiftfsmWBWrappers
+import SharedVariables
 
-public func make_Sonar(name: String = "Sonar", gateway: FSMGateway, clock: Timer, caller: FSM_ID, echoPin: wb_types, triggerPin: wb_types, echoPinValue: wb_types) -> (FSMType, [ShallowDependency]) {
+public func make_Sonar(name: String = "Sonar", gateway: FSMGateway, clock: Timer, caller: FSM_ID, echoPin: SonarPin, triggerPin: SonarPin, echoPinValue: SonarPin) -> (FSMType, [ShallowDependency]) {
     let (fsm, dependencies) = make_submachine_Sonar(name: name, gateway: gateway, clock: clock, caller: caller, echoPin: echoPin, triggerPin: triggerPin, echoPinValue: echoPinValue)
     return (FSMType.controllableFSM(fsm), dependencies)
 }
 
-public func make_submachine_Sonar(name machineName: String, gateway: FSMGateway, clock: Timer, caller: FSM_ID, echoPin: wb_types, triggerPin: wb_types, echoPinValue: wb_types) -> (AnyControllableFiniteStateMachine, [ShallowDependency]) {
+public func make_submachine_Sonar(name machineName: String, gateway: FSMGateway, clock: Timer, caller: FSM_ID, echoPin: SonarPin, triggerPin: SonarPin, echoPinValue: SonarPin) -> (AnyControllableFiniteStateMachine, [ShallowDependency]) {
     // External Variables.
-    let external_echoPin: WhiteboardVariable<Bool> = WhiteboardVariable(msgType: echoPin, atomic: false)
-    let external_triggerPin: WhiteboardVariable<Bool> = WhiteboardVariable(msgType: triggerPin, atomic: false)
-    let external_echoPinValue: WhiteboardVariable<Bool> = WhiteboardVariable(msgType: echoPinValue, atomic: false)
+    let external_echoPin: InMemoryVariable<Bool> = InMemoryVariable(name: echoPin.rawValue, initialValue: false)
+    let external_triggerPin: InMemoryVariable<Bool> = InMemoryVariable(name: triggerPin.rawValue, initialValue: false)
+    let external_echoPinValue: InMemoryVariable<Bool> = InMemoryVariable(name: echoPinValue.rawValue, initialValue: false)
     // FSM Variables.
     let fsmVars = SimpleVariablesContainer(vars: SonarVars())
     // States.
@@ -193,7 +193,7 @@ public func make_submachine_Sonar(name machineName: String, gateway: FSMGateway,
             }
         }
 
-        var echoPin: WhiteboardVariable<Bool>.Class {
+        var echoPin: Bool {
             get {
                 return Me.external_echoPin.val
             }
@@ -202,7 +202,7 @@ public func make_submachine_Sonar(name machineName: String, gateway: FSMGateway,
             }
         }
 
-        var triggerPin: WhiteboardVariable<Bool>.Class {
+        var triggerPin: Bool {
             get {
                 return Me.external_triggerPin.val
             }
@@ -276,13 +276,13 @@ public func make_submachine_Sonar(name machineName: String, gateway: FSMGateway,
             }
         }
 
-        var echoPinValue: WhiteboardVariable<Bool>.Class {
+        var echoPinValue: Bool {
             get {
                 return Me.external_echoPinValue.val
             }
         }
 
-        var triggerPin: WhiteboardVariable<Bool>.Class {
+        var triggerPin: Bool {
             get {
                 return Me.external_triggerPin.val
             }
@@ -551,13 +551,13 @@ public func make_submachine_Sonar(name machineName: String, gateway: FSMGateway,
             }
         }
 
-        var echoPinValue: WhiteboardVariable<Bool>.Class {
+        var echoPinValue: Bool {
             get {
                 return Me.external_echoPinValue.val
             }
         }
 
-        var triggerPin: WhiteboardVariable<Bool>.Class {
+        var triggerPin: Bool {
             get {
                 return Me.external_triggerPin.val
             }
@@ -631,13 +631,13 @@ public func make_submachine_Sonar(name machineName: String, gateway: FSMGateway,
             }
         }
 
-        var echoPinValue: WhiteboardVariable<Bool>.Class {
+        var echoPinValue: Bool {
             get {
                 return Me.external_echoPinValue.val
             }
         }
 
-        var triggerPin: WhiteboardVariable<Bool>.Class {
+        var triggerPin: Bool {
             get {
                 return Me.external_triggerPin.val
             }
@@ -711,7 +711,7 @@ public func make_submachine_Sonar(name machineName: String, gateway: FSMGateway,
             }
         }
 
-        var echoPinValue: WhiteboardVariable<Bool>.Class {
+        var echoPinValue: Bool {
             get {
                 return Me.external_echoPinValue.val
             }
@@ -782,7 +782,7 @@ public func make_submachine_Sonar(name machineName: String, gateway: FSMGateway,
             }
         }
 
-        var echoPinValue: WhiteboardVariable<Bool>.Class {
+        var echoPinValue: Bool {
             get {
                 return Me.external_echoPinValue.val
             }
