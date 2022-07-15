@@ -373,7 +373,7 @@ class SonarTests: XCTestCase {
         }
     }
     
-    func test_canGenerateSonarMachines() {
+    func test_canGenerateSeparateSonarMachines() {
         let wbVars: [(String, SonarPin, SonarPin, SonarPin)] = [
             ("Sonar23", .pin2Control, .pin3Control, .pin2Status),
             ("Sonar45", .pin4Control, .pin5Control, .pin4Status),
