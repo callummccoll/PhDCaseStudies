@@ -275,7 +275,7 @@ class ParameterisedSonarTests: XCTestCase {
         let caller = make_Caller(gateway: gateway, clock: clock).0
         let callerID = gateway.id(of: caller.name)
         let sonar23 = make_Sonar(name: "Sonar1", gateway: gateway, clock: clock, caller: callerID, echoPin: kwb_Arduino2Pin_v, triggerPin: kwb_Arduino3Pin_v, echoPinValue: kwb_Arduino2PinValue_v).0
-        let sonar45 = make_Sonar(name: "Sonar2", gateway: gateway, clock: clock, caller: callerID, echoPin: kwb_Arduino4Pin_v, triggerPin: kwb_Arduino4Pin_v, echoPinValue: kwb_Arduino5PinValue_v).0
+        let sonar45 = make_Sonar(name: "Sonar2", gateway: gateway, clock: clock, caller: callerID, echoPin: kwb_Arduino4Pin_v, triggerPin: kwb_Arduino5Pin_v, echoPinValue: kwb_Arduino4PinValue_v).0
         let callerTimeslot = Timeslot(
             fsms: [caller.name],
             callChain: CallChain(root: caller.name, calls: []),
@@ -311,6 +311,14 @@ class ParameterisedSonarTests: XCTestCase {
                         VerificationMap.Step(
                             time: timeslotLength,
                             step: .executeAndSaveSnapshot(timeslot: callerTimeslot)
+                        ),
+                        VerificationMap.Step(
+                            time: timeslotLength,
+                            step: .startDelegates(fsms: [sonar23Timeslot, sonar45Timeslot])
+                        ),
+                        VerificationMap.Step(
+                            time: timeslotLength * 2,
+                            step: .endDelegates(fsms: [sonar23Timeslot, sonar45Timeslot])
                         )
                     ],
                     delegates: [sonar23.name, sonar45.name]
@@ -356,7 +364,7 @@ class ParameterisedSonarTests: XCTestCase {
             isolatedThreads: ScheduleIsolator(
                 threads: threads,
                 parameterisedThreads: parameterisedThreads,
-                cycleLength: timeslotLength
+                cycleLength: timeslotLength * 2
             )
         )
         let viewFactory = TestableViewFactory { name in
