@@ -396,7 +396,7 @@ class OnDemandSonarTests: XCTestCase {
                 return TestableView(identifier: name, expectedIdentifier: "", expected: [])
             }
         }
-        let factory = SQLiteKripkeStructureFactory(savingInDirectory: testFolder.name)
+        let factory = SQLiteKripkeStructureFactory(savingInDirectory: testFolder.path)
         do {
             try verifier.verify(gateway: gateway, timer: clock, factory: factory).forEach {
                 try viewFactory.make(identifier: $0.identifier).generate(store: $0, usingClocks: true)
