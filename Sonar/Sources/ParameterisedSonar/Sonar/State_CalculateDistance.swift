@@ -36,12 +36,12 @@ public final class State_CalculateDistance: SonarState {
         }
     }
 
-    public internal(set) var result: UInt16? {
+    public internal(set) var distance: UInt16 {
         get {
-            return Me.results.vars.result
+            return fsmVars.distance
         }
         set {
-            Me.results.vars.result = newValue
+            fsmVars.distance = newValue
         }
     }
 
@@ -99,7 +99,7 @@ public final class State_CalculateDistance: SonarState {
     }
 
     public override func onEntry() {
-        result = UInt16(max(Double(numLoops) * SCHEDULE_LENGTH * SPEED_OF_SOUND / 2.0 - SONAR_OFFSET, 0.0))
+        distance = UInt16(max(Double(numLoops) * SCHEDULE_LENGTH * SPEED_OF_SOUND / 2.0 - SONAR_OFFSET, 0.0))
     }
 
     public override func onExit() {}

@@ -1,7 +1,7 @@
 import swiftfsm
 import SwiftfsmWBWrappers
 
-public final class State_SkipGarbage: SonarState {
+public final class State_ClearTrigger: SonarState {
 
     public override var validVars: [String: [Any]] {
         return [
@@ -36,12 +36,12 @@ public final class State_SkipGarbage: SonarState {
         }
     }
 
-    public internal(set) var distance: UInt16 {
+    public internal(set) var result: UInt16? {
         get {
-            return fsmVars.distance
+            return Me.results.vars.result
         }
         set {
-            fsmVars.distance = newValue
+            Me.results.vars.result = newValue
         }
     }
 
@@ -104,7 +104,7 @@ public final class State_SkipGarbage: SonarState {
 
     public init(
         _ name: String,
-        transitions: [Transition<State_SkipGarbage, SonarState>] = [],
+        transitions: [Transition<State_ClearTrigger, SonarState>] = [],
         gateway: FSMGateway
 ,        clock: Timer
     ) {
@@ -114,11 +114,10 @@ public final class State_SkipGarbage: SonarState {
     }
 
     public override func onEntry() {
-        
+        triggerPin = false
     }
 
     public override func onExit() {
-        triggerPin = true
         numLoops += 1
     }
 
@@ -126,10 +125,10 @@ public final class State_SkipGarbage: SonarState {
         numLoops += 1
     }
 
-    public override final func clone() -> State_SkipGarbage {
-        let transitions: [Transition<State_SkipGarbage, SonarState>] = self.transitions.map { $0.cast(to: State_SkipGarbage.self) }
-        let state = State_SkipGarbage(
-            "SkipGarbage",
+    public override final func clone() -> State_ClearTrigger {
+        let transitions: [Transition<State_ClearTrigger, SonarState>] = self.transitions.map { $0.cast(to: State_ClearTrigger.self) }
+        let state = State_ClearTrigger(
+            "ClearTrigger",
             transitions: transitions,
             gateway: self.gateway
 ,            clock: self.clock
@@ -140,7 +139,7 @@ public final class State_SkipGarbage: SonarState {
 
 }
 
-extension State_SkipGarbage: CustomStringConvertible {
+extension State_ClearTrigger: CustomStringConvertible {
 
     public var description: String {
         return """

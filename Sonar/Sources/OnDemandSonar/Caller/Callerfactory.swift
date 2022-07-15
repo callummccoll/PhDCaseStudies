@@ -8,9 +8,8 @@ public func make_Caller(name: String = "Caller", gateway: FSMGateway, clock: Tim
 
 public func make_submachine_Caller(name machineName: String, gateway: FSMGateway, clock: Timer) -> (AnyControllableFiniteStateMachine, [ShallowDependency]) {
     let myID = gateway.id(of: machineName)
-    let sonar23ID = gateway.id(of: "Sonar23")
-    let sonar45ID = gateway.id(of: "Sonar45")
-    let sonar67ID = gateway.id(of: "Sonar67")
+    let sonar23ID = gateway.id(of: "Sonar1")
+    let sonar45ID = gateway.id(of: "Sonar2")
     // FSM Variables.
     let fsmVars = SimpleVariablesContainer(vars: CallerVars())
     // States.
@@ -39,24 +38,22 @@ public func make_submachine_Caller(name machineName: String, gateway: FSMGateway
                 ],
                 caller: myID
             )
-        },
-        Sonar67: { (echoPin, triggerPin, echoPinValue) in
-            gateway.invoke(
-                sonar67ID,
-                withParameters: [
-                    "echoPin": echoPin,
-                    "triggerPin": triggerPin,
-                    "echoPinValue": echoPinValue
-                ],
-                caller: myID
-            )
         }
     )
     let state_Exit = EmptyCallerState("Exit")
     state_Initial.addTransition(CallerStateTransition(Transition<CallerState_Initial, CallerState>(state_Exit) { state in
         let Me = state.Me!
         let clock: Timer = state.clock
-        return state.promise23.hasFinished && state.promise45.hasFinished && state.promise67.hasFinished
+
+        var fsmVars: CallerVars {
+            get {
+                return Me.fsmVars.vars
+            }
+            set {
+                Me.fsmVars.vars = newValue
+            }
+        }
+        return state.promise23.hasFinished && state.promise45.hasFinished
     }))
     let ringlet = CallerRinglet()
     // Create FSM.

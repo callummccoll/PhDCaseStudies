@@ -36,12 +36,12 @@ public final class State_SkipGarbage: SonarState {
         }
     }
 
-    public internal(set) var distance: UInt16 {
+    public internal(set) var result: UInt16? {
         get {
-            return fsmVars.distance
+            return Me.results.vars.result
         }
         set {
-            fsmVars.distance = newValue
+            Me.results.vars.result = newValue
         }
     }
 

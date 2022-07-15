@@ -36,12 +36,12 @@ public final class State_SetupMeasure: SonarState {
         }
     }
 
-    public internal(set) var result: UInt16? {
+    public internal(set) var distance: UInt16 {
         get {
-            return Me.results.vars.result
+            return fsmVars.distance
         }
         set {
-            Me.results.vars.result = newValue
+            fsmVars.distance = newValue
         }
     }
 

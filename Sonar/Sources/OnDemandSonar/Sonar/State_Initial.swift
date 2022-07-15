@@ -1,7 +1,7 @@
 import swiftfsm
 import SwiftfsmWBWrappers
 
-public final class State_SkipGarbage: SonarState {
+public final class State_Initial: SonarState {
 
     public override var validVars: [String: [Any]] {
         return [
@@ -36,12 +36,12 @@ public final class State_SkipGarbage: SonarState {
         }
     }
 
-    public internal(set) var distance: UInt16 {
+    public internal(set) var result: UInt16? {
         get {
-            return fsmVars.distance
+            return Me.results.vars.result
         }
         set {
-            fsmVars.distance = newValue
+            Me.results.vars.result = newValue
         }
     }
 
@@ -87,49 +87,36 @@ public final class State_SkipGarbage: SonarState {
         }
     }
 
-    public var echoPinValue: WhiteboardVariable<Bool>.Class {
-        get {
-            return Me.external_echoPinValue.val
-        }
-    }
-
-    public internal(set) var triggerPin: WhiteboardVariable<Bool>.Class {
-        get {
-            return Me.external_triggerPin.val
-        }
-        set {
-            Me.external_triggerPin.val = newValue
-        }
-    }
-
     public init(
         _ name: String,
-        transitions: [Transition<State_SkipGarbage, SonarState>] = [],
+        transitions: [Transition<State_Initial, SonarState>] = [],
         gateway: FSMGateway
 ,        clock: Timer
     ) {
         self.gateway = gateway
         self.clock = clock
-        super.init(name, transitions: transitions.map { SonarStateTransition($0) }, snapshotSensors: ["echoPinValue"], snapshotActuators: ["triggerPin"])
+        super.init(name, transitions: transitions.map { SonarStateTransition($0) }, snapshotSensors: [], snapshotActuators: [])
     }
 
     public override func onEntry() {
-        
+        SCHEDULE_LENGTH = Double(clock.scheduleLength) / 1000000.0
+        let maxDistance: Double = 400
+        let maxTime = (maxDistance * 2) / SPEED_OF_SOUND
+        maxLoops = UInt16(ceil(maxTime / SCHEDULE_LENGTH))
     }
 
     public override func onExit() {
-        triggerPin = true
-        numLoops += 1
+        
     }
 
     public override func main() {
-        numLoops += 1
+        
     }
 
-    public override final func clone() -> State_SkipGarbage {
-        let transitions: [Transition<State_SkipGarbage, SonarState>] = self.transitions.map { $0.cast(to: State_SkipGarbage.self) }
-        let state = State_SkipGarbage(
-            "SkipGarbage",
+    public override final func clone() -> State_Initial {
+        let transitions: [Transition<State_Initial, SonarState>] = self.transitions.map { $0.cast(to: State_Initial.self) }
+        let state = State_Initial(
+            "Initial",
             transitions: transitions,
             gateway: self.gateway
 ,            clock: self.clock
@@ -140,7 +127,7 @@ public final class State_SkipGarbage: SonarState {
 
 }
 
-extension State_SkipGarbage: CustomStringConvertible {
+extension State_Initial: CustomStringConvertible {
 
     public var description: String {
         return """

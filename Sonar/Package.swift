@@ -10,7 +10,8 @@ let package = Package(
         .library(name: "TimerActuatorMicrowave", targets: ["TimerActuatorMicrowave"]),
         .library(name: "FinalOneMinuteMicrowave", targets: ["FinalOneMinuteMicrowave"]),
         .library(name: "Sonar", targets: ["Sonar"]),
-        .library(name: "ParameterisedSonar", targets: ["ParameterisedSonar"])
+        .library(name: "ParameterisedSonar", targets: ["ParameterisedSonar"]),
+        .library(name: "OnDemandSonar", targets: ["OnDemandSonar"])
     ],
     dependencies: [
         // Dependencies declare other packages that this package depends on.
@@ -72,6 +73,16 @@ let package = Package(
                 //.product(name: "SwiftfsmWBWrappers", package: "SwiftfsmWBWrappers")
             ]
         ),
+        .target(
+            name: "OnDemandSonar",
+            dependencies: [
+                "FSM",
+                "SwiftfsmWBWrappers",
+                .product(name: "Verification", package: "swiftfsm"),
+                //.product(name: "Verification", package: "swiftfsm"),
+                //.product(name: "SwiftfsmWBWrappers", package: "SwiftfsmWBWrappers")
+            ]
+        ),
         .testTarget(
             name: "InitialOneMinuteMicrowaveTests",
             dependencies: [
@@ -120,6 +131,17 @@ let package = Package(
             name: "ParameterisedSonarTests",
             dependencies: [
                 "ParameterisedSonar",
+                "FSM",
+                "SwiftfsmWBWrappers",
+                .product(name: "swiftfsm_binaries", package: "swiftfsm"),
+                .product(name: "Verification", package: "swiftfsm")
+                //.product(name: "SwiftfsmWBWrappers", package: "SwiftfsmWBWrappers")
+            ]
+        ),
+        .testTarget(
+            name: "OnDemandSonarTests",
+            dependencies: [
+                "OnDemandSonar",
                 "FSM",
                 "SwiftfsmWBWrappers",
                 .product(name: "swiftfsm_binaries", package: "swiftfsm"),

@@ -3,8 +3,6 @@ import SwiftfsmWBWrappers
 
 public final class SonarVars: Variables {
 
-    public var distance: UInt16
-
     public var numLoops: UInt16
 
     public var maxLoops: UInt16!
@@ -15,8 +13,7 @@ public final class SonarVars: Variables {
 
     public var SONAR_OFFSET: Double
 
-    public init(distance: UInt16 = UInt16.max, numLoops: UInt16 = 0, maxLoops: UInt16! = nil, SPEED_OF_SOUND: Double = 34300, SCHEDULE_LENGTH: Double! = nil, SONAR_OFFSET: Double = 40) {
-        self.distance = distance
+    public init(numLoops: UInt16 = 0, maxLoops: UInt16! = nil, SPEED_OF_SOUND: Double = 34300, SCHEDULE_LENGTH: Double! = nil, SONAR_OFFSET: Double = 40) {
         self.numLoops = numLoops
         self.maxLoops = maxLoops
         self.SPEED_OF_SOUND = SPEED_OF_SOUND
@@ -26,7 +23,6 @@ public final class SonarVars: Variables {
 
     public final func clone() -> SonarVars {
         return SonarVars(
-            distance: ((self.distance as? Cloneable)?.clone() as? UInt16) ?? self.distance,
             numLoops: ((self.numLoops as? Cloneable)?.clone() as? UInt16) ?? self.numLoops,
             maxLoops: ((self.maxLoops as? Cloneable)?.clone() as? UInt16) ?? self.maxLoops,
             SPEED_OF_SOUND: ((self.SPEED_OF_SOUND as? Cloneable)?.clone() as? Double) ?? self.SPEED_OF_SOUND,

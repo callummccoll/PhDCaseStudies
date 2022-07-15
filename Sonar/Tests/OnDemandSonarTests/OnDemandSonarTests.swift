@@ -65,10 +65,10 @@ import KripkeStructureViews
 import swiftfsm
 import SwiftfsmWBWrappers
 
-@testable import ParameterisedSonar
+@testable import OnDemandSonar
 @testable import Verification
 
-class ParameterisedSonarTests: XCTestCase {
+class OnDemandSonarTests: XCTestCase {
     
     final class InMemoryStore: MutableKripkeStructure {
 
@@ -261,23 +261,21 @@ class ParameterisedSonarTests: XCTestCase {
         // Put teardown code here. This method is called after the invocation of each test method in the class.
     }
     
-    func test_canGenerateSonarMachines() async {
+    func test_canGenerateTwoSonarMachines() async {
         let gateway = StackGateway()
         let timeslotLength: UInt = 244
         let clock = FSMClock(
             ringletLengths: [
                 "Caller": timeslotLength,
-                "Sonar23": timeslotLength,
-                "Sonar45": timeslotLength,
-                "Sonar67": timeslotLength
+                "Sonar1": timeslotLength,
+                "Sonar2": timeslotLength,
             ],
             scheduleLength: timeslotLength * 2
         )
         let caller = make_Caller(gateway: gateway, clock: clock).0
         let callerID = gateway.id(of: caller.name)
-        let sonar23 = make_Sonar(name: "Sonar23", gateway: gateway, clock: clock, caller: callerID, echoPin: kwb_Arduino2Pin_v, triggerPin: kwb_Arduino3Pin_v, echoPinValue: kwb_Arduino2PinValue_v).0
-        let sonar45 = make_Sonar(name: "Sonar45", gateway: gateway, clock: clock, caller: callerID, echoPin: kwb_Arduino4Pin_v, triggerPin: kwb_Arduino5Pin_v, echoPinValue: kwb_Arduino4PinValue_v).0
-        let sonar67 = make_Sonar(name: "Sonar67", gateway: gateway, clock: clock, caller: callerID, echoPin: kwb_Arduino6Pin_v, triggerPin: kwb_Arduino7Pin_v, echoPinValue: kwb_Arduino6PinValue_v).0
+        let sonar23 = make_Sonar(name: "Sonar1", gateway: gateway, clock: clock, caller: callerID, echoPin: kwb_Arduino2Pin_v, triggerPin: kwb_Arduino3Pin_v, echoPinValue: kwb_Arduino2PinValue_v).0
+        let sonar45 = make_Sonar(name: "Sonar2", gateway: gateway, clock: clock, caller: callerID, echoPin: kwb_Arduino4Pin_v, triggerPin: kwb_Arduino5Pin_v, echoPinValue: kwb_Arduino4PinValue_v).0
         let callerTimeslot = Timeslot(
             fsms: [caller.name],
             callChain: CallChain(root: caller.name, calls: []),
@@ -302,14 +300,6 @@ class ParameterisedSonarTests: XCTestCase {
             duration: timeslotLength,
             cyclesExecuted: 0
         )
-        let sonar67Timeslot = Timeslot(
-            fsms: [sonar67.name],
-            callChain: CallChain(root: sonar67.name, calls: []),
-            externalDependencies: [],
-            startingTime: timeslotLength,
-            duration: timeslotLength,
-            cyclesExecuted: 0
-        )
         let threads = [
             IsolatedThread(
                 map: VerificationMap(
@@ -324,16 +314,16 @@ class ParameterisedSonarTests: XCTestCase {
                         ),
                         VerificationMap.Step(
                             time: timeslotLength,
-                            step: .startDelegates(fsms: [sonar23Timeslot, sonar45Timeslot, sonar67Timeslot])
+                            step: .startDelegates(fsms: [sonar23Timeslot, sonar45Timeslot])
                         ),
                         VerificationMap.Step(
                             time: timeslotLength * 2,
-                            step: .endDelegates(fsms: [sonar23Timeslot, sonar45Timeslot, sonar67Timeslot])
+                            step: .endDelegates(fsms: [sonar23Timeslot, sonar45Timeslot])
                         )
                     ],
-                    delegates: [sonar23.name, sonar45.name, sonar67.name]
+                    delegates: [sonar23.name, sonar45.name]
                 ),
-                pool: FSMPool(fsms: [caller, sonar23, sonar45, sonar67], parameterisedFSMs: [sonar23.name, sonar45.name, sonar67.name])
+                pool: FSMPool(fsms: [caller, sonar23, sonar45], parameterisedFSMs: [sonar23.name, sonar45.name])
             )
         ]
         let parameterisedThreads = [
@@ -368,22 +358,6 @@ class ParameterisedSonarTests: XCTestCase {
                     delegates: []
                 ),
                 pool: FSMPool(fsms: [sonar45], parameterisedFSMs: [])
-            ),
-            sonar67.name: IsolatedThread(
-                map: VerificationMap(
-                    steps: [
-                        VerificationMap.Step(
-                            time: timeslotLength,
-                            step: .takeSnapshotAndStartTimeslot(timeslot: sonar67Timeslot)
-                        ),
-                        VerificationMap.Step(
-                            time: timeslotLength * 2,
-                            step: .executeAndSaveSnapshot(timeslot: sonar67Timeslot)
-                        )
-                    ],
-                    delegates: []
-                ),
-                pool: FSMPool(fsms: [sonar67], parameterisedFSMs: [])
             )
         ]
         let verifier = ScheduleVerifier(
@@ -395,7 +369,7 @@ class ParameterisedSonarTests: XCTestCase {
         )
         let viewFactory = TestableViewFactory { name in
             switch name {
-            case caller.name, sonar23.name, sonar45.name, sonar67.name:
+            case caller.name, sonar23.name, sonar45.name:
                 return TestableView(identifier: name, expectedIdentifier: name, expected: [])
             default:
                 XCTFail("Unexepected view name: \(name)")
