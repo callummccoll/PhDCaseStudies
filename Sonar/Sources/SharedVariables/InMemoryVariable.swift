@@ -79,7 +79,6 @@ public final class InMemoryVariable<T: ExternalVariables>: ExternalVariablesCont
         self.rawName = name
         self.name = "InMemoryVariable-" + name
         self.val = initialValue
-        cache[self.name] = self.val
     }
     
     public func saveSnapshot() {
@@ -87,7 +86,7 @@ public final class InMemoryVariable<T: ExternalVariables>: ExternalVariablesCont
     }
     
     public func takeSnapshot() {
-        self.val = cache[name] as? T ?? self.val
+        self.val = (cache[name] as? T) ?? self.val
     }
 
     public func clone() -> InMemoryVariable<T> {

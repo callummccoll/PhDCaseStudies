@@ -281,7 +281,7 @@ class OnDemandSonarTests: XCTestCase {
         fm.changeCurrentDirectoryPath(originalPath)
     }
     
-    func test_canGenerateTwoSonarMachines() async {
+    func test_separate() async {
         let gateway = StackGateway()
         let timeslotLength: UInt = 244
         let clock = FSMClock(

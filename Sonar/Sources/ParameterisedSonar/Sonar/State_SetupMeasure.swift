@@ -97,7 +97,9 @@ public final class State_SetupMeasure: SonarState {
         super.init(name, transitions: transitions.map { SonarStateTransition($0) }, snapshotSensors: [], snapshotActuators: [])
     }
 
-    public override func onEntry() {}
+    public override func onEntry() {
+        distance = UInt16.max
+    }
 
     public override func onExit() {}
 

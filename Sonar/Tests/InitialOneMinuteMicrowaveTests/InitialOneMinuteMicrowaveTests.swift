@@ -281,7 +281,7 @@ class InitialOneMinuteMicrowaveTests: XCTestCase {
         fm.changeCurrentDirectoryPath(originalPath)
     }
 
-    func test_canGenerateSeparateMicrowaveMachines() {
+    func test_separate() {
         let gateway = StackGateway()
         let gap: UInt = 10
         let timeslotLength: UInt = 30
@@ -365,74 +365,74 @@ class InitialOneMinuteMicrowaveTests: XCTestCase {
         }
     }
 
-    func test_canGenerateCombinedMicrowaveMachines() {
-        let gateway = StackGateway()
-        let gap: UInt = 10
-        let timeslotLength: UInt = 30
-        let clock = FSMClock(
-            ringletLengths: ["Timer": 30, "Alarm": 30, "Cooking": 30, "Light": 30],
-            scheduleLength: gap * 4 + timeslotLength * 4
-        )
-        let timer = AnyControllableFiniteStateMachine(TimerFiniteStateMachine(name: "Timer", status: .status, clock: clock))
-        let alarm = AnyControllableFiniteStateMachine(AlarmFiniteStateMachine(name: "Alarm", status: .status, sound: .sound, clock: clock))
-        let cooking = AnyControllableFiniteStateMachine(CookingFiniteStateMachine(name: "Cooking", status: .status, motor: .motor))
-        let light = AnyControllableFiniteStateMachine(LightFiniteStateMachine(name: "Light", status: .status, light: .light))
-        let machines: [FSMType] = [.controllableFSM(timer), .controllableFSM(alarm), .controllableFSM(cooking), .controllableFSM(light)]
-        let steps: [VerificationMap.Step] = machines.enumerated().flatMap { (index: Int, machine: FSMType) -> [VerificationMap.Step] in
-            [
-                VerificationMap.Step(
-                    time: gap * UInt(index) + timeslotLength * UInt(index),
-                    step: .takeSnapshotAndStartTimeslot(
-                        timeslot: Timeslot(
-                            fsms: [machine.name],
-                            callChain: CallChain(root: machine.name, calls: []),
-                            externalDependencies: [],
-                            startingTime: gap * UInt(index) + timeslotLength * UInt(index),
-                            duration: timeslotLength,
-                            cyclesExecuted: 0
-                        )
-                    )
-                ),
-                VerificationMap.Step(
-                    time: gap * UInt(index) + timeslotLength * UInt(index) + timeslotLength,
-                    step: .executeAndSaveSnapshot(
-                        timeslot: Timeslot(
-                            fsms: [machine.name],
-                            callChain: CallChain(root: machine.name, calls: []),
-                            externalDependencies: [],
-                            startingTime: gap * UInt(index) + timeslotLength * UInt(index),
-                            duration: timeslotLength,
-                            cyclesExecuted: 0
-                        )
-                    )
-                )
-            ]
-        }
-        let threads = [
-            IsolatedThread(
-                map: VerificationMap(
-                    steps: steps,
-                    delegates: []
-                ),
-                pool: FSMPool(fsms: machines, parameterisedFSMs: [])
-            )
-        ]
-        let verifier = ScheduleVerifier(
-            isolatedThreads: ScheduleIsolator(
-                threads: threads,
-                parameterisedThreads: [:],
-                cycleLength: UInt(machines.count) * timeslotLength + UInt(machines.count) * gap
-            )
-        )
-        let viewFactory = GraphVizKripkeStructureViewFactory()
-        let factory = SQLiteKripkeStructureFactory(savingInDirectory: testFolder.path)
-        do {
-            try verifier.verify(gateway: gateway, timer: clock, factory: factory).forEach {
-                try viewFactory.make(identifier: $0.identifier).generate(store: $0, usingClocks: true)
-            }
-        } catch {
-            XCTFail(error.localizedDescription)
-        }
-    }
+//    func test_canGenerateCombinedMicrowaveMachines() {
+//        let gateway = StackGateway()
+//        let gap: UInt = 10
+//        let timeslotLength: UInt = 30
+//        let clock = FSMClock(
+//            ringletLengths: ["Timer": 30, "Alarm": 30, "Cooking": 30, "Light": 30],
+//            scheduleLength: gap * 4 + timeslotLength * 4
+//        )
+//        let timer = AnyControllableFiniteStateMachine(TimerFiniteStateMachine(name: "Timer", status: .status, clock: clock))
+//        let alarm = AnyControllableFiniteStateMachine(AlarmFiniteStateMachine(name: "Alarm", status: .status, sound: .sound, clock: clock))
+//        let cooking = AnyControllableFiniteStateMachine(CookingFiniteStateMachine(name: "Cooking", status: .status, motor: .motor))
+//        let light = AnyControllableFiniteStateMachine(LightFiniteStateMachine(name: "Light", status: .status, light: .light))
+//        let machines: [FSMType] = [.controllableFSM(timer), .controllableFSM(alarm), .controllableFSM(cooking), .controllableFSM(light)]
+//        let steps: [VerificationMap.Step] = machines.enumerated().flatMap { (index: Int, machine: FSMType) -> [VerificationMap.Step] in
+//            [
+//                VerificationMap.Step(
+//                    time: gap * UInt(index) + timeslotLength * UInt(index),
+//                    step: .takeSnapshotAndStartTimeslot(
+//                        timeslot: Timeslot(
+//                            fsms: [machine.name],
+//                            callChain: CallChain(root: machine.name, calls: []),
+//                            externalDependencies: [],
+//                            startingTime: gap * UInt(index) + timeslotLength * UInt(index),
+//                            duration: timeslotLength,
+//                            cyclesExecuted: 0
+//                        )
+//                    )
+//                ),
+//                VerificationMap.Step(
+//                    time: gap * UInt(index) + timeslotLength * UInt(index) + timeslotLength,
+//                    step: .executeAndSaveSnapshot(
+//                        timeslot: Timeslot(
+//                            fsms: [machine.name],
+//                            callChain: CallChain(root: machine.name, calls: []),
+//                            externalDependencies: [],
+//                            startingTime: gap * UInt(index) + timeslotLength * UInt(index),
+//                            duration: timeslotLength,
+//                            cyclesExecuted: 0
+//                        )
+//                    )
+//                )
+//            ]
+//        }
+//        let threads = [
+//            IsolatedThread(
+//                map: VerificationMap(
+//                    steps: steps,
+//                    delegates: []
+//                ),
+//                pool: FSMPool(fsms: machines, parameterisedFSMs: [])
+//            )
+//        ]
+//        let verifier = ScheduleVerifier(
+//            isolatedThreads: ScheduleIsolator(
+//                threads: threads,
+//                parameterisedThreads: [:],
+//                cycleLength: UInt(machines.count) * timeslotLength + UInt(machines.count) * gap
+//            )
+//        )
+//        let viewFactory = GraphVizKripkeStructureViewFactory()
+//        let factory = SQLiteKripkeStructureFactory(savingInDirectory: testFolder.path)
+//        do {
+//            try verifier.verify(gateway: gateway, timer: clock, factory: factory).forEach {
+//                try viewFactory.make(identifier: $0.identifier).generate(store: $0, usingClocks: true)
+//            }
+//        } catch {
+//            XCTFail(error.localizedDescription)
+//        }
+//    }
 
 }
