@@ -8,8 +8,8 @@ import SharedVariables
 
 final class TimerFiniteStateMachine: MachineProtocol, CustomStringConvertible {
 
-    typealias _StateType = MiPalState
-    typealias Ringlet = MiPalRinglet
+    typealias _StateType = MicrowaveState
+    typealias Ringlet = MicrowaveRinglet
 
     var validVars: [String: [Any]] {
         [
@@ -96,20 +96,18 @@ final class TimerFiniteStateMachine: MachineProtocol, CustomStringConvertible {
 
     var name: String
 
-    lazy var initialState: MiPalState = {
-        CallbackMiPalState(
+    lazy var initialState: MicrowaveState = {
+        CallbackMicrowaveState(
             "Check",
-            transitions: [],
             snapshotSensors: [buttonPushed.name, doorOpen.name],
             snapshotActuators: [timeLeft.name],
             onEntry: { [unowned self] in self.timeLeft.val = 0 < self.currentTime}
         )
     }()
 
-    lazy var addState: MiPalState = {
-        CallbackMiPalState(
+    lazy var addState: MicrowaveState = {
+        CallbackMicrowaveState(
             "Add_1_Minute",
-            transitions: [],
             snapshotSensors: [buttonPushed.name, doorOpen.name],
             snapshotActuators: [timeLeft.name],
             onEntry: { [unowned self] in self.currentTime += 1},
@@ -117,33 +115,32 @@ final class TimerFiniteStateMachine: MachineProtocol, CustomStringConvertible {
         )
     }()
 
-    lazy var decrementState: MiPalState = {
-        CallbackMiPalState(
+    lazy var decrementState: MicrowaveState = {
+        CallbackMicrowaveState(
             "Decrement_1_Minute",
-            transitions: [],
             snapshotSensors: [buttonPushed.name, doorOpen.name],
             snapshotActuators: [timeLeft.name],
             onEntry: { [unowned self] in self.currentTime -= 1 }
         )
     }()
 
-    lazy var currentState: MiPalState = { initialState }()
+    lazy var currentState: MicrowaveState = { initialState }()
 
-    var previousState: MiPalState = EmptyMiPalState("previous")
+    var previousState: MicrowaveState = EmptyMicrowaveState("previous")
 
-    var suspendedState: MiPalState? = nil
+    var suspendedState: MicrowaveState? = nil
 
-    var suspendState: MiPalState = EmptyMiPalState("suspend")
+    var suspendState: MicrowaveState = EmptyMicrowaveState("suspend")
 
-    var exitState: MiPalState = EmptyMiPalState("exit", snapshotSensors: [])
+    var exitState: MicrowaveState = EmptyMicrowaveState("exit", snapshotSensors: [])
 
     var submachines: [TimerFiniteStateMachine] = []
 
-    var initialPreviousState: MiPalState = EmptyMiPalState("previous")
+    var initialPreviousState: MicrowaveState = EmptyMicrowaveState("previous")
 
-    var ringlet = MiPalRinglet(previousState: EmptyMiPalState("previous"))
+    var ringlet = MicrowaveRinglet(previousState: EmptyMicrowaveState("previous"))
 
-    private func update<T>(keyPath: WritableKeyPath<T, MiPalState>, target: inout T) {
+    private func update<T>(keyPath: WritableKeyPath<T, MicrowaveState>, target: inout T) {
         switch target[keyPath: keyPath].name {
         case initialState.name:
             target[keyPath: keyPath] = initialState
@@ -178,21 +175,21 @@ final class TimerFiniteStateMachine: MachineProtocol, CustomStringConvertible {
         self.doorOpen = doorOpen
         self.timeLeft = timeLeft
         self.clock = clock
-        initialState.addTransition(Transition(decrementState) { [unowned self] _ in
+        initialState.addTransition(MicrowaveTransition(Transition(decrementState) { [unowned self] _ in
             self.currentTime > 0
                 && !self.doorOpen.val
                 && self.timeLeft.val
                 && self.clock.after(60)
-        })
-        initialState.addTransition(Transition(addState) { [unowned self] _ in
+        }))
+        initialState.addTransition(MicrowaveTransition(Transition(addState) { [unowned self] _ in
             self.buttonPushed.val
                 && !self.doorOpen.val
                 && self.currentTime < 15
-        })
-        addState.addTransition(Transition(initialState) { [unowned self] _ in
+        }))
+        addState.addTransition(MicrowaveTransition(UnownedTransition(initialState) { [unowned self] _ in
             !self.buttonPushed.val
-        })
-        decrementState.addTransition(Transition(initialState) { _ in true })
+        }))
+        decrementState.addTransition(MicrowaveTransition(UnownedTransition(initialState) { _ in true }))
     }
 
 }

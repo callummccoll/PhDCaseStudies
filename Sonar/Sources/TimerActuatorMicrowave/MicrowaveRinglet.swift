@@ -1,5 +1,5 @@
 /*
- * MiPalRinglet.swift
+ * MicrowaveRinglet.swift
  * InitialOneMinuteMicrowave
  *
  * Created by Callum McColl on 6/7/2022.
@@ -66,9 +66,9 @@ import swiftfsm
  *  state is returned.  If no transitions are possible then the main method is
  *  called and the state is returned.
  */
-public final class MiPalRinglet: Ringlet, Cloneable, KripkeVariablesModifier {
+public final class MicrowaveRinglet: Ringlet, Cloneable, KripkeVariablesModifier {
 
-    var previousState: MiPalState
+    var previousState: MicrowaveState
 
     var shouldExecuteOnEntry: Bool = true
 
@@ -87,23 +87,23 @@ public final class MiPalRinglet: Ringlet, Cloneable, KripkeVariablesModifier {
     }
 
     /**
-     *  Create a new `MiPalRinglet`.
+     *  Create a new `MicrowaveRinglet`.
      *
-     *  - Parameter previousState:  The last `MiPalState` that was executed.
-     *  This is used to check whether the `MiPalState.onEntry()` should run.
+     *  - Parameter previousState:  The last `MicrowaveState` that was executed.
+     *  This is used to check whether the `MicrowaveState.onEntry()` should run.
      */
-    public init(previousState: MiPalState = EmptyMiPalState("_previous")) {
+    public init(previousState: MicrowaveState = EmptyMicrowaveState("_previous")) {
         self.previousState = previousState
     }
 
     /**
      *  Execute the ringlet.
      *
-     *  - Parameter state: The `MiPalState` that is being executed.
+     *  - Parameter state: The `MicrowaveState` that is being executed.
      *
      *  - Returns: A state representing the next state to execute.
      */
-    public func execute(state: MiPalState) -> MiPalState {
+    public func execute(state: MicrowaveState) -> MicrowaveState {
         // Call onEntry if we have just transitioned to this state.
         if state != self.previousState {
             state.onEntry()
@@ -122,8 +122,8 @@ public final class MiPalRinglet: Ringlet, Cloneable, KripkeVariablesModifier {
         return state
     }
 
-    public func clone() -> MiPalRinglet {
-        let r = MiPalRinglet(previousState: self.previousState.clone())
+    public func clone() -> MicrowaveRinglet {
+        let r = MicrowaveRinglet(previousState: self.previousState.clone())
         r.shouldExecuteOnEntry = self.shouldExecuteOnEntry
         return r
     }

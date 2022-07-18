@@ -8,8 +8,8 @@ import SharedVariables
 
 final class AlarmFiniteStateMachine: MachineProtocol, CustomStringConvertible {
 
-    typealias _StateType = MiPalState
-    typealias Ringlet = MiPalRinglet
+    typealias _StateType = MicrowaveState
+    typealias Ringlet = MicrowaveRinglet
 
     var validVars: [String: [Any]] {
         [
@@ -78,8 +78,8 @@ final class AlarmFiniteStateMachine: MachineProtocol, CustomStringConvertible {
 
     var name: String
 
-    lazy var initialState: MiPalState = {
-        CallbackMiPalState(
+    lazy var initialState: MicrowaveState = {
+        CallbackMicrowaveState(
             "Off",
             transitions: [Transition(armedState) { [self] _ in status.val.timeLeft }],
             snapshotSensors: [status.name, sound.name],
@@ -88,42 +88,40 @@ final class AlarmFiniteStateMachine: MachineProtocol, CustomStringConvertible {
         )
     }()
 
-    lazy var armedState: MiPalState = {
-        CallbackMiPalState(
+    lazy var armedState: MicrowaveState = {
+        CallbackMicrowaveState(
             "Armed",
-            transitions: [],
             snapshotSensors: [status.name, sound.name],
             snapshotActuators: [status.name, sound.name]
         )
     }()
 
-    lazy var onState: MiPalState = {
-        CallbackMiPalState(
+    lazy var onState: MicrowaveState = {
+        CallbackMicrowaveState(
             "On",
-            transitions: [],
             snapshotSensors: [status.name, sound.name],
             snapshotActuators: [status.name, sound.name],
             onEntry: { [self] in sound.val = true }
         )
     }()
 
-    lazy var currentState: MiPalState = { initialState }()
+    lazy var currentState: MicrowaveState = { initialState }()
 
-    var previousState: MiPalState = EmptyMiPalState("previous")
+    var previousState: MicrowaveState = EmptyMicrowaveState("previous")
 
-    var suspendedState: MiPalState? = nil
+    var suspendedState: MicrowaveState? = nil
 
-    var suspendState: MiPalState = EmptyMiPalState("suspend")
+    var suspendState: MicrowaveState = EmptyMicrowaveState("suspend")
 
-    var exitState: MiPalState = EmptyMiPalState("exit", snapshotSensors: [])
+    var exitState: MicrowaveState = EmptyMicrowaveState("exit", snapshotSensors: [])
 
     var submachines: [AlarmFiniteStateMachine] = []
 
-    var initialPreviousState: MiPalState = EmptyMiPalState("previous")
+    var initialPreviousState: MicrowaveState = EmptyMicrowaveState("previous")
 
-    var ringlet = MiPalRinglet(previousState: EmptyMiPalState("previous"))
+    var ringlet = MicrowaveRinglet(previousState: EmptyMicrowaveState("previous"))
 
-    private func update<T>(keyPath: WritableKeyPath<T, MiPalState>, target: inout T) {
+    private func update<T>(keyPath: WritableKeyPath<T, MicrowaveState>, target: inout T) {
         switch target[keyPath: keyPath].name {
         case initialState.name:
             target[keyPath: keyPath] = initialState
@@ -158,8 +156,8 @@ final class AlarmFiniteStateMachine: MachineProtocol, CustomStringConvertible {
         self.status = status
         self.sound = sound
         self.clock = clock
-        self.armedState.addTransition(Transition(onState) { [self] _ in !self.status.val.timeLeft })
-        self.onState.addTransition(Transition(initialState) { [self] _ in self.clock.after(2) })
+        self.armedState.addTransition(MicrowaveTransition(Transition(onState) { [self] _ in !self.status.val.timeLeft }))
+        self.onState.addTransition(MicrowaveTransition(UnownedTransition(initialState) { [self] _ in self.clock.after(2) }))
     }
 
 }

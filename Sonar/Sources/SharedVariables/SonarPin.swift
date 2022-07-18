@@ -56,7 +56,15 @@
  *
  */
 
-public enum SonarPin: String, CaseIterable, Hashable, Codable {
+import swiftfsm
+
+public enum SonarPin: String, CaseIterable, Hashable, Codable, KripkeVariablesModifier {
+
+    public var computedVars: [String : Any] {
+        [
+            "rawValue": self.rawValue
+        ]
+    }
 
     case pin1Status
     case pin1Control

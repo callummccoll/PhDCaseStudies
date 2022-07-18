@@ -9,8 +9,8 @@ import SharedVariables
 
 final class LightFiniteStateMachine: MachineProtocol, CustomStringConvertible {
 
-    typealias _StateType = MiPalState
-    typealias Ringlet = MiPalRinglet
+    typealias _StateType = MicrowaveState
+    typealias Ringlet = MicrowaveRinglet
 
     var validVars: [String: [Any]] {
         [
@@ -75,8 +75,8 @@ final class LightFiniteStateMachine: MachineProtocol, CustomStringConvertible {
 
     var name: String
 
-    lazy var initialState: MiPalState = {
-        CallbackMiPalState(
+    lazy var initialState: MicrowaveState = {
+        CallbackMicrowaveState(
             "Off",
             transitions: [Transition(onState) { [self] _ in status.val.doorOpen || status.val.timeLeft }],
             snapshotSensors: [status.name, light.name],
@@ -85,31 +85,30 @@ final class LightFiniteStateMachine: MachineProtocol, CustomStringConvertible {
         )
     }()
 
-    lazy var onState: MiPalState = {
-        CallbackMiPalState(
+    lazy var onState: MicrowaveState = {
+        CallbackMicrowaveState(
             "On",
-            transitions: [],
             snapshotSensors: [status.name, light.name],
             snapshotActuators: [status.name, light.name],
             onEntry: { [self] in light.val = true }
         )
     }()
 
-    lazy var currentState: MiPalState = { initialState }()
+    lazy var currentState: MicrowaveState = { initialState }()
 
-    var previousState: MiPalState = EmptyMiPalState("previous")
+    var previousState: MicrowaveState = EmptyMicrowaveState("previous")
 
-    var suspendedState: MiPalState? = nil
+    var suspendedState: MicrowaveState? = nil
 
-    var suspendState: MiPalState = EmptyMiPalState("suspend")
+    var suspendState: MicrowaveState = EmptyMicrowaveState("suspend")
 
-    var exitState: MiPalState = EmptyMiPalState("exit", snapshotSensors: [])
+    var exitState: MicrowaveState = EmptyMicrowaveState("exit", snapshotSensors: [])
 
     var submachines: [LightFiniteStateMachine] = []
 
-    var initialPreviousState: MiPalState = EmptyMiPalState("previous")
+    var initialPreviousState: MicrowaveState = EmptyMicrowaveState("previous")
 
-    var ringlet = MiPalRinglet(previousState: EmptyMiPalState("previous"))
+    var ringlet = MicrowaveRinglet(previousState: EmptyMicrowaveState("previous"))
 
     func clone() -> LightFiniteStateMachine {
         let fsm = LightFiniteStateMachine(name: name, status: status, light: light)
@@ -139,7 +138,7 @@ final class LightFiniteStateMachine: MachineProtocol, CustomStringConvertible {
         self.name = name
         self.status = status
         self.light = light
-        self.onState.addTransition(Transition(initialState) { [self] _ in !self.status.val.doorOpen && !self.status.val.timeLeft })
+        self.onState.addTransition(MicrowaveTransition(UnownedTransition(initialState) { [self] _ in !self.status.val.doorOpen && !self.status.val.timeLeft }))
     }
 
 }
