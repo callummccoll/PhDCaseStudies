@@ -790,7 +790,7 @@ public func make_submachine_Sonar(name machineName: String, gateway: FSMGateway,
 
         return !echoPinValue
     }))
-    state_LostPulse.addTransition(SonarStateTransition(Transition<State_LostPulse, SonarState>(state_Setup_Pin) { state in
+    state_LostPulse.addTransition(SonarStateTransition(UnownedTransition<State_LostPulse, State_Setup_Pin>(state_Setup_Pin) { state in
         let Me = state.Me!
         let clock: Timer = state.clock
         var fsmVars: SonarVars {
@@ -855,7 +855,7 @@ public func make_submachine_Sonar(name machineName: String, gateway: FSMGateway,
 
         return true
     }))
-    state_CalculateDistance.addTransition(SonarStateTransition(Transition<State_CalculateDistance, SonarState>(state_Setup_Pin) { state in
+    state_CalculateDistance.addTransition(SonarStateTransition(UnownedTransition<State_CalculateDistance, SonarState>(state_Setup_Pin) { state in
         let Me = state.Me!
         let clock: Timer = state.clock
         var fsmVars: SonarVars {

@@ -80,9 +80,9 @@ public final class State_CalculateDistance: SonarState {
 
     public init(
         _ name: String,
-        transitions: [Transition<State_CalculateDistance, SonarState>] = [],
-        gateway: FSMGateway
-,        clock: Timer
+        transitions: [UnownedTransition<State_CalculateDistance, SonarState>] = [],
+        gateway: FSMGateway,
+        clock: Timer
     ) {
         self.gateway = gateway
         self.clock = clock
@@ -102,7 +102,9 @@ public final class State_CalculateDistance: SonarState {
     }
 
     public override final func clone() -> State_CalculateDistance {
-        let transitions: [Transition<State_CalculateDistance, SonarState>] = self.transitions.map { $0.cast(to: State_CalculateDistance.self) }
+        let transitions = [
+            UnownedTransition<State_CalculateDistance, SonarState>(self.transitions[0].target, canTransition: { _ in true })
+        ]
         let state = State_CalculateDistance(
             "CalculateDistance",
             transitions: transitions,

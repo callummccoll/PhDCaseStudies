@@ -80,9 +80,9 @@ public final class State_LostPulse: SonarState {
 
     public init(
         _ name: String,
-        transitions: [Transition<State_LostPulse, SonarState>] = [],
-        gateway: FSMGateway
-,        clock: Timer
+        transitions: [UnownedTransition<State_LostPulse, SonarState>] = [],
+        gateway: FSMGateway,
+        clock: Timer
     ) {
         self.gateway = gateway
         self.clock = clock
@@ -102,7 +102,9 @@ public final class State_LostPulse: SonarState {
     }
 
     public override final func clone() -> State_LostPulse {
-        let transitions: [Transition<State_LostPulse, SonarState>] = self.transitions.map { $0.cast(to: State_LostPulse.self) }
+        let transitions = [
+            UnownedTransition<State_LostPulse, SonarState>(self.transitions[0].target, canTransition: { _ in true })
+        ]
         let state = State_LostPulse(
             "LostPulse",
             transitions: transitions,
