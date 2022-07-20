@@ -10,7 +10,7 @@ import swiftfsm
  */
 public final class SonarRinglet: Ringlet, Cloneable, KripkeVariablesModifier {
 
-    internal var Me: SonarFiniteStateMachine!
+    weak internal var Me: SonarFiniteStateMachine!
 
     public var computedVars: [String: Any] {
         return [
