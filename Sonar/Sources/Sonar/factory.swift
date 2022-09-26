@@ -19,11 +19,7 @@ public func make_submachine_Sonar(name machineName: String, gateway: FSMGateway,
         gateway: gateway,
         clock: clock
     )
-    var state_Setup_Pin = State_Setup_Pin(
-        "Setup_Pin",
-        gateway: gateway,
-        clock: clock
-    )
+    var state_Setup_Pin = State_Setup_Pin("Setup_Pin")
     let state_Suspend = State_Suspend(
         "Suspend",
         gateway: gateway,
@@ -132,7 +128,6 @@ public func make_submachine_Sonar(name machineName: String, gateway: FSMGateway,
     }))
     state_Setup_Pin.addTransition(SonarStateTransition(Transition<State_Setup_Pin, SonarState>(state_SetupMeasure) { state in
         let Me = state.Me!
-        let clock: Timer = state.clock
         var fsmVars: SonarVars {
             get {
                 return Me.fsmVars.vars

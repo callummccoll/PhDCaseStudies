@@ -14,10 +14,6 @@ public final class State_Setup_Pin: SonarState {
         ]
     }
 
-    fileprivate let gateway: FSMGateway
-
-    public let clock: Timer
-
     public internal(set) var fsmVars: SonarVars {
         get {
             return Me.fsmVars.vars
@@ -98,12 +94,8 @@ public final class State_Setup_Pin: SonarState {
 
     public init(
         _ name: String,
-        transitions: [Transition<State_Setup_Pin, SonarState>] = [],
-        gateway: FSMGateway
-,        clock: Timer
+        transitions: [Transition<State_Setup_Pin, SonarState>] = []
     ) {
-        self.gateway = gateway
-        self.clock = clock
         super.init(name, transitions: transitions.map { SonarStateTransition($0) }, snapshotSensors: [], snapshotActuators: ["echoPin", "triggerPin"])
     }
 
@@ -120,13 +112,11 @@ public final class State_Setup_Pin: SonarState {
     }
 
     public override final func clone() -> State_Setup_Pin {
-        let transitions: [Transition<State_Setup_Pin, SonarState>] = self.transitions.map { $0.cast(to: State_Setup_Pin.self) }
-        let state = State_Setup_Pin(
+        var state = State_Setup_Pin(
             "Setup_Pin",
-            transitions: transitions,
-            gateway: self.gateway
-,            clock: self.clock
+            transitions: []
         )
+        self.transitions.forEach { state.addTransition($0) }
         state.Me = self.Me
         return state
     }
