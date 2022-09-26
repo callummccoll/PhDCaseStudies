@@ -260,80 +260,83 @@ class SonarTests: XCTestCase {
         }
     }
     
-//    func test_canGenerateCombinedSonarMachines() {
-//        let wbVars: [(String, SonarPin, SonarPin, SonarPin)] = [
-//            ("Sonar23", .pin2Control, .pin3Control, .pin2Status),
-//            ("Sonar45", .pin4Control, .pin5Control, .pin4Status),
-//            ("Sonar67", .pin6Control, .pin7Control, .pin6Status)
-//        ]
-//        let gateway = StackGateway()
-//        let timeslotLength: UInt = 244
-//        let clock = FSMClock(
-//            ringletLengths: Dictionary(uniqueKeysWithValues: wbVars.map { ($0.0, timeslotLength) }),
-//            scheduleLength: UInt(wbVars.count) * timeslotLength
-//        )
-//        let machines: [FSMType] = wbVars.map {
-//            let caller = gateway.id(of: $0)
-//            return make_Sonar(
-//                name: $0,
-//                gateway: gateway,
-//                clock: clock,
-//                caller: caller,
-//                echoPin: $1,
-//                triggerPin: $2,
-//                echoPinValue: $3
-//            ).0
-//        }
-//        let pool = FSMPool(fsms: machines, parameterisedFSMs: [])
-//        let steps = wbVars.enumerated().flatMap { (index, data) in
-//            [
-//                VerificationMap.Step(
-//                    time: 0,
-//                    step: .takeSnapshotAndStartTimeslot(
-//                        timeslot: Timeslot(
-//                            fsms: [data.0],
-//                            callChain: CallChain(root: data.0, calls: []),
-//                            externalDependencies: [],
-//                            startingTime: UInt(index) * timeslotLength,
-//                            duration: timeslotLength,
-//                            cyclesExecuted: 0
-//                        )
-//                    )
-//                ),
-//                VerificationMap.Step(
-//                    time: timeslotLength,
-//                    step: .executeAndSaveSnapshot(
-//                        timeslot: Timeslot(
-//                            fsms: [data.0],
-//                            callChain: CallChain(root: data.0, calls: []),
-//                            externalDependencies: [],
-//                            startingTime: UInt(index) * timeslotLength,
-//                            duration: timeslotLength,
-//                            cyclesExecuted: 0
-//                        )
-//                    )
-//                )
-//            ]
-//        }
-//        let threads = [
-//            IsolatedThread(map: VerificationMap(steps: steps, delegates: []), pool: pool)
-//        ]
-//        let verifier = ScheduleVerifier(
-//            isolatedThreads: ScheduleIsolator(
-//                threads: threads,
-//                parameterisedThreads: [:],
-//                cycleLength: UInt(wbVars.count) * timeslotLength
-//            )
-//        )
-//        let viewFactory = GraphVizKripkeStructureViewFactory()
-//        let factory = SQLiteKripkeStructureFactory(savingInDirectory: testFolder.path)
-//        do {
-//            try verifier.verify(gateway: gateway, timer: clock, factory: factory).forEach {
-//                try viewFactory.make(identifier: $0.identifier).generate(store: $0, usingClocks: true)
-//            }
-//        } catch {
-//            XCTFail(error.localizedDescription)
-//        }
-//    }
+    func test_combined() {
+        let wbVars: [(String, SonarPin, SonarPin, SonarPin)] = [
+            ("Sonar23", .pin2Control, .pin3Control, .pin2Status),
+            ("Sonar45", .pin4Control, .pin5Control, .pin4Status),
+            ("Sonar67", .pin6Control, .pin7Control, .pin6Status)
+        ]
+        let gateway = StackGateway()
+        let timeslotLength: UInt = 244
+        let clock = FSMClock(
+            ringletLengths: Dictionary(uniqueKeysWithValues: wbVars.map { ($0.0, timeslotLength) }),
+            scheduleLength: UInt(wbVars.count) * timeslotLength
+        )
+        let machines: [FSMType] = wbVars.map {
+            let caller = gateway.id(of: $0)
+            return make_Sonar(
+                name: $0,
+                gateway: gateway,
+                clock: clock,
+                caller: caller,
+                echoPin: $1,
+                triggerPin: $2,
+                echoPinValue: $3
+            ).0
+        }
+        let pool = FSMPool(fsms: machines, parameterisedFSMs: [])
+        let steps = wbVars.enumerated().flatMap { (index, data) in
+            [
+                VerificationMap.Step(
+                    time: 0,
+                    step: .takeSnapshotAndStartTimeslot(
+                        timeslot: Timeslot(
+                            fsms: [data.0],
+                            callChain: CallChain(root: data.0, calls: []),
+                            externalDependencies: [],
+                            startingTime: UInt(index) * timeslotLength,
+                            duration: timeslotLength,
+                            cyclesExecuted: 0
+                        )
+                    )
+                ),
+                VerificationMap.Step(
+                    time: timeslotLength,
+                    step: .executeAndSaveSnapshot(
+                        timeslot: Timeslot(
+                            fsms: [data.0],
+                            callChain: CallChain(root: data.0, calls: []),
+                            externalDependencies: [],
+                            startingTime: UInt(index) * timeslotLength,
+                            duration: timeslotLength,
+                            cyclesExecuted: 0
+                        )
+                    )
+                )
+            ]
+        }
+        let threads = [
+            IsolatedThread(map: VerificationMap(steps: steps, delegates: []), pool: pool)
+        ]
+        let verifier = ScheduleVerifier(
+            isolatedThreads: ScheduleIsolator(
+                threads: threads,
+                parameterisedThreads: [:],
+                cycleLength: UInt(wbVars.count) * timeslotLength
+            )
+        )
+        let viewFactory = AggregateKripkeStructureViewFactory(factories: [
+            AnyKripkeStructureViewFactory(GraphVizKripkeStructureViewFactory()),
+            AnyKripkeStructureViewFactory(NuSMVKripkeStructureViewFactory())
+        ])
+        let factory = SQLiteKripkeStructureFactory(savingInDirectory: testFolder.path)
+        do {
+            try verifier.verify(gateway: gateway, timer: clock, factory: factory).forEach {
+                try viewFactory.make(identifier: $0.identifier).generate(store: $0, usingClocks: true)
+            }
+        } catch {
+            XCTFail(error.localizedDescription)
+        }
+    }
 
 }
