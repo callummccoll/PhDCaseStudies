@@ -4,7 +4,7 @@
 import PackageDescription
 
 let package = Package(
-    name: "Sonar",
+    name: "PhDCaseStudies",
     products: [
         .library(name: "InitialOneMinuteMicrowave", targets: ["InitialOneMinuteMicrowave"]),
         .library(name: "TimerActuatorMicrowave", targets: ["TimerActuatorMicrowave"]),
@@ -16,8 +16,8 @@ let package = Package(
     dependencies: [
         // Dependencies declare other packages that this package depends on.
         // .package(url: /* package url */, from: "1.0.0"),
-        .package(name: "FSM", url: "git@github.com:mipalgu/FSM", .branch("parameters")),
-        .package(name: "swiftfsm", url: "git@github.com:mipalgu/swiftfsm", .branch("parameters"))
+        .package(name: "FSM", url: "https://github.com/mipalgu/FSM", from: "1.0.0"),
+        .package(name: "swiftfsm", url: "https://github.com/mipalgu/swiftfsm", from: "1.0.0")
     ],
     targets: [
         // Targets are the basic building blocks of a package. A target can define a module or a test suite.
