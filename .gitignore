@@ -8,3 +8,5 @@ DerivedData/
 *.gv
 *.smv
 kripke_structures/*
+Package.resolved
+.vscode
