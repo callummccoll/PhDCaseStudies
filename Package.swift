@@ -87,8 +87,24 @@ let package = Package(
             ]
         ),
         .testTarget(
+            name: "KripkeStructureTestCase",
+            dependencies: []
+        ),
+        .testTarget(
+            name: "MicrowaveTestCase",
+            dependencies: [
+                "FSM",
+                "SharedVariables",
+                "KripkeStructureTestCase",
+                .product(name: "swiftfsm_binaries", package: "swiftfsm"),
+                .product(name: "Verification", package: "swiftfsm")
+            ]
+        ),
+        .testTarget(
             name: "InitialOneMinuteMicrowaveTests",
             dependencies: [
+                "KripkeStructureTestCase",
+                "MicrowaveTestCase",
                 "InitialOneMinuteMicrowave",
                 "FSM",
                 "SharedVariables",
@@ -100,6 +116,8 @@ let package = Package(
         .testTarget(
             name: "TimerActuatorMicrowaveTests",
             dependencies: [
+                "KripkeStructureTestCase",
+                "MicrowaveTestCase",
                 "TimerActuatorMicrowave",
                 "FSM",
                 "SharedVariables",
@@ -111,6 +129,8 @@ let package = Package(
         .testTarget(
             name: "FinalOneMinuteMicrowaveTests",
             dependencies: [
+                "KripkeStructureTestCase",
+                "MicrowaveTestCase",
                 "FinalOneMinuteMicrowave",
                 "FSM",
                 "SharedVariables",
