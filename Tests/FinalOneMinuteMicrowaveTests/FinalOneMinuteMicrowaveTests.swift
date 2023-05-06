@@ -58,13 +58,14 @@
 
 import MicrowaveTestCase
 import swiftfsm
+import Timers
 import XCTest
 
 @testable import FinalOneMinuteMicrowave
 
 class FinalOneMinuteMicrowaveTests: MicrowaveTestCase {
 
-    var timer: AnyControllableFiniteStateMachine {
+    func timer(clock: FSMClock) -> AnyControllableFiniteStateMachine {
         AnyControllableFiniteStateMachine(TimerFiniteStateMachine(
             name: "Timer",
             buttonPushed: .buttonPushed,
@@ -74,7 +75,7 @@ class FinalOneMinuteMicrowaveTests: MicrowaveTestCase {
         ))
     }
 
-    var alarm: AnyControllableFiniteStateMachine {
+    func alarm(clock: FSMClock) -> AnyControllableFiniteStateMachine {
         AnyControllableFiniteStateMachine(AlarmFiniteStateMachine(
             name: "Alarm",
             timeLeft: .timeLeft,
@@ -102,7 +103,21 @@ class FinalOneMinuteMicrowaveTests: MicrowaveTestCase {
     }
 
     func test_separate() throws {
-        try generate_separate(timer: timer, alarm: alarm, cooking: cooking, light: light)
+        try generate_separate(
+            timer: timer(clock: clock),
+            alarm: alarm(clock: clock),
+            cooking: cooking,
+            light: light
+        )
+    }
+
+    func test_parallel() throws {
+        try generate_parallel(
+            timer: timer(clock: parallelClock),
+            alarm: alarm(clock: parallelClock),
+            cooking: cooking,
+            light: light
+        )
     }
 
 }
