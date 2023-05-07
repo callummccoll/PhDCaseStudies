@@ -1,5 +1,11 @@
 import Foundation
+import Gateways
+import KripkeStructure
+import KripkeStructureViews
+import Timers
 import XCTest
+
+@testable import Verification
 
 open class KripkeStructureTestCase: XCTestCase {
 
@@ -33,6 +39,29 @@ open class KripkeStructureTestCase: XCTestCase {
     open override func tearDownWithError() throws {
         let fm = FileManager.default
         fm.changeCurrentDirectoryPath(originalPath)
+    }
+
+    public func generate(
+        gateway: StackGateway,
+        threads: [IsolatedThread],
+        clock: FSMClock,
+        cycleLength: UInt
+    ) throws {
+        let verifier = ScheduleVerifier(
+            isolatedThreads: ScheduleIsolator(
+                threads: threads,
+                parameterisedThreads: [:],
+                cycleLength: cycleLength
+            )
+        )
+        let viewFactory = AggregateKripkeStructureViewFactory(factories: [
+            AnyKripkeStructureViewFactory(GraphVizKripkeStructureViewFactory()),
+            AnyKripkeStructureViewFactory(NuSMVKripkeStructureViewFactory())
+        ])
+        let factory = SQLiteKripkeStructureFactory(savingInDirectory: testFolder.path)
+        try verifier.verify(gateway: gateway, timer: clock, factory: factory).forEach {
+            try viewFactory.make(identifier: $0.identifier).generate(store: $0, usingClocks: true)
+        }
     }
 
 }
