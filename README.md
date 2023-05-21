@@ -3,11 +3,11 @@ Implementation of the case studies found in the PhD thesis entitled "Leveraging 
 
 ## Overview
 
-Within this swift package, you will find the implementation for the case studies with software that generates the corresponding Kripke structures. Within the *Sources* directory, you will find the implementation of each case study. The *Tests* folder contains the software that generates the Kripke structure for each case study respectively. Note that this swift package depends on (swiftfsm)[https://github.com/mipalgu/swiftfsm] that contains the framework for creating Logic-Labelled Finite State Machines, and generating Kripke structures. The swiftfsm framework has many other dependencies that you may also wish to look at, each of wich can be viewed by inspecting the corresponding Package.swift file. For example, swiftfsm depends on the [KripkeStructures](https://github.com/mipalgu/KripkeStructures) framework for generating the Kripke structures.
+Within this swift package, you will find the implementation for the case studies with software that generates the corresponding Kripke structures. Within the *Sources* directory, you will find the implementation of each case study. The *Tests* folder contains the software that generates the Kripke structure for each case study respectively. Note that this swift package depends on [swiftfsm](https://github.com/mipalgu/swiftfsm) that contains the framework for creating Logic-Labelled Finite State Machines, and generating Kripke structures. The swiftfsm framework has many other dependencies that you may also wish to look at, each of wich can be viewed by inspecting the corresponding Package.swift file. For example, swiftfsm depends on the [KripkeStructures](https://github.com/mipalgu/KripkeStructures) framework for generating the Kripke structures.
 
 ## Prerequisites
 
-To generate the Kripke structures, you must first have a swift version installed that is greater than or equal to swift version 5.8. You may find installation instructions in (swift.org)[https://swift.org].
+To generate the Kripke structures, you must first have a swift version installed that is greater than or equal to swift version 5.8. You may find installation instructions in [swift.org](https://swift.org).
 
 ## Building
 
